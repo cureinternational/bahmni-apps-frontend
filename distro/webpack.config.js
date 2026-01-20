@@ -19,6 +19,7 @@ module.exports = (env, argv) => {
       alias: isDevelopment ? {
         '@bahmni/clinical-app': join(__dirname, '../apps/clinical/src'),
         '@bahmni/registration-app': join(__dirname, '../apps/registration/src'),
+        '@bahmni/orders-app': join(__dirname, '../apps/orders/src'),
       } : {},
     },
     devServer: {
@@ -51,7 +52,8 @@ module.exports = (env, argv) => {
         assets: [
           './src/assets',
           { input: isDevelopment ? '../apps/clinical/public/locales' : '../apps/clinical/dist/locales', glob: '**/*', output: 'clinical/locales' },
-          { input: isDevelopment ? '../apps/registration/public/locales' : '../apps/registration/dist/locales', glob: '**/*', output: 'registration/locales' }
+          { input: isDevelopment ? '../apps/registration/public/locales' : '../apps/registration/dist/locales', glob: '**/*', output: 'registration/locales' },
+          { input: isDevelopment ? '../apps/orders/public/locales' : '../apps/orders/dist/locales', glob: '**/*', output: 'orders/locales' }
         ],
         styles: ['./src/styles.scss'],
         outputHashing:
