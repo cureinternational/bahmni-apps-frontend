@@ -5,48 +5,14 @@ import {
   TabPanels,
   TabPanel,
   Loading,
+  SortableDataTable,
   Search,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import React, { useState } from 'react';
-import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
 import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
 import { useOrdersConfig } from '../hooks/useOrdersConfig';
-import { useOrdersFulfillment } from '../hooks/useOrdersFulfillment';
-import { useOrdersTabCounts } from '../hooks/useOrdersTabCounts';
 import styles from './styles/OrdersPage.module.scss';
-
-interface OrdersTabContentProps {
-  tabLabel: string;
-}
-
-const OrdersTabContent: React.FC<OrdersTabContentProps> = ({ tabLabel }) => {
-  const { t } = useTranslation();
-  const { rows, headers, isLoading, isDrugOrderTab } =
-    useOrdersFulfillment(tabLabel);
-
-  return (
-    <div className={styles.tabContent}>
-      <div className={styles.searchContainer}>
-        <Search
-          placeholder={t('SEARCH_ORDERS_PLACEHOLDER')}
-          labelText={t('SEARCH_ORDERS_LABEL')}
-          closeButtonLabelText={t('CLEAR_SEARCH_INPUT')}
-          size="md"
-          onChange={() => {}}
-        />
-      </div>
-      <div className={styles.ordersTable}>
-        <OrdersFulfillmentTable
-          rows={rows}
-          headers={headers}
-          loading={isLoading}
-          isDrugOrderTab={isDrugOrderTab}
-        />
-      </div>
-    </div>
-  );
-};
 
 export const OrdersPage: React.FC = () => {
   const { t } = useTranslation();
@@ -57,7 +23,6 @@ export const OrdersPage: React.FC = () => {
   if (isLoading) {
     return <Loading />;
   }
-
   if (error) {
     return (
       <div className={styles.errorContainer}>
@@ -67,7 +32,6 @@ export const OrdersPage: React.FC = () => {
       </div>
     );
   }
-
   return (
     <div className={styles.pageContainer}>
       <OrdersHeader />
