@@ -9,6 +9,7 @@ import {
   DASHBOARD_CONFIG_URL,
   MEDICATIONS_CONFIG_URL,
   REGISTRATION_CONFIG_URL,
+  ORDERS_CONFIG_URL,
   ERROR_MESSAGES,
   ERROR_TITLES,
 } from './constants';
@@ -18,9 +19,11 @@ import {
   MedicationJSONConfig,
   RegistrationConfig,
 } from './models';
+import { OrdersConfig } from './models/ordersConfig';
 import clinicalConfigSchema from './schemas/clinicalConfig.schema.json';
 import dashboardConfigSchema from './schemas/dashboardConfig.schema.json';
 import medicationConfigSchema from './schemas/medicationConfig.schema.json';
+import ordersConfigSchema from './schemas/ordersConfig.schema.json';
 import registrationConfigSchema from './schemas/registrationConfig.schema.json';
 
 /**
@@ -94,6 +97,16 @@ export const getRegistrationConfig =
   };
 
 /**
+ * Fetches and validates orders extension configuration from the server
+ *
+ * @returns Validated orders configuration object or null if invalid/error
+ * @throws Error if fetch fails or validation fails
+ */
+export const getOrdersConfig = async (): Promise<OrdersConfig | null> => {
+  return getConfig<OrdersConfig>(ORDERS_CONFIG_URL, ordersConfigSchema);
+};
+
+/**
  * Fetches and validates configuration from the server
  *
  * @param configPath - URL path to fetch the configuration
@@ -106,7 +119,8 @@ const getConfig = async <
     | ClinicalConfig
     | DashboardConfig
     | MedicationJSONConfig
-    | RegistrationConfig,
+    | RegistrationConfig
+    | OrdersConfig,
 >(
   configPath: string,
   configSchema: Record<string, unknown>,

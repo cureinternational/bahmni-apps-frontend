@@ -18,6 +18,11 @@ const RegistrationApp = lazy(() =>
     default: module.RegistrationApp,
   })),
 );
+const OrdersApp = lazy(() =>
+  import('@bahmni/orders-app').then((module) => ({
+    default: module.OrdersApp,
+  })),
+);
 export function App() {
   return (
     <Suspense fallback={<Loading />}>
@@ -25,6 +30,7 @@ export function App() {
         <Route index element={<IndexPage />} />
         <Route path="/clinical/*" element={<ClinicalApp />} />
         <Route path="/registration/*" element={<RegistrationApp />} />
+        <Route path="/orders/*" element={<OrdersApp />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>

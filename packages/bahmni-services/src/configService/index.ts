@@ -3,6 +3,7 @@ export {
   getDashboardConfig,
   getMedicationConfig,
   getRegistrationConfig,
+  getOrdersConfig,
 } from './configService';
 export {
   type ClinicalConfig,
@@ -20,3 +21,8 @@ export {
   type AppExtensionConfig,
   type ExtensionPoint,
 } from './models';
+export {
+  type OrdersConfig,
+  type OrderExtension,
+  type OrderExtensionParams,
+} from './models/ordersConfig';
