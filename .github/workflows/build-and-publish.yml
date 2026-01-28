@@ -118,7 +118,7 @@ jobs:
           # Tag the scanned image with final tags
           docker buildx imagetools create \
             --tag ${{ env.IMAGE_NAME }}:latest \
-            --tag ${{ env.IMAGE_NAME }}:${{ github.run_number }} \
+            --tag ${{ env.IMAGE_NAME }}:ipd-${{ github.run_number }} \
             ${{ env.IMAGE_NAME }}:scan-${{ github.sha }}
 
   trigger-workflow:
