@@ -10,6 +10,7 @@ import {
   MEDICATIONS_CONFIG_URL,
   REGISTRATION_CONFIG_URL,
   ORDERS_CONFIG_URL,
+  ORDERS_TABLE_CONFIG_URL,
   ERROR_MESSAGES,
   ERROR_TITLES,
 } from './constants';
@@ -20,10 +21,12 @@ import {
   RegistrationConfig,
 } from './models';
 import { OrdersConfig } from './models/ordersConfig';
+import { OrdersTableConfig } from './models/ordersTableConfig';
 import clinicalConfigSchema from './schemas/clinicalConfig.schema.json';
 import dashboardConfigSchema from './schemas/dashboardConfig.schema.json';
 import medicationConfigSchema from './schemas/medicationConfig.schema.json';
 import ordersConfigSchema from './schemas/ordersConfig.schema.json';
+import ordersTableConfigSchema from './schemas/ordersTableConfig.schema.json';
 import registrationConfigSchema from './schemas/registrationConfig.schema.json';
 
 /**
@@ -107,6 +110,42 @@ export const getOrdersConfig = async (): Promise<OrdersConfig | null> => {
 };
 
 /**
+ * Fetches and validates orders table configuration from the server
+ *
+ * @returns Validated orders table configuration object or null if invalid/error
+ * @throws Error if fetch fails or validation fails
+ */
+export const getOrdersTableConfig =
+  async (): Promise<OrdersTableConfig | null> => {
+    try {
+      // Fetch the full app.json
+      const appConfig = await fetchConfig<{
+        config: OrdersTableConfig;
+      }>(ORDERS_TABLE_CONFIG_URL);
+
+      if (!appConfig?.config) {
+        return null;
+      }
+
+      // Extract the table config from the nested config property
+      const tableConfig = appConfig.config;
+
+      // Validate the extracted config
+      const isValid = await validateConfig(
+        tableConfig,
+        ordersTableConfigSchema,
+      );
+      if (!isValid) {
+        return null;
+      }
+
+      return tableConfig;
+    } catch {
+      return null;
+    }
+  };
+
+/**
  * Fetches and validates configuration from the server
  *
  * @param configPath - URL path to fetch the configuration
@@ -114,14 +153,7 @@ export const getOrdersConfig = async (): Promise<OrdersConfig | null> => {
  * @returns Validated configuration object or null if invalid/error
  * @throws Error if fetch fails or validation fails
  */
-const getConfig = async <
-  T extends
-    | ClinicalConfig
-    | DashboardConfig
-    | MedicationJSONConfig
-    | RegistrationConfig
-    | OrdersConfig,
->(
+const getConfig = async <T>(
   configPath: string,
   configSchema: Record<string, unknown>,
 ): Promise<T | null> => {

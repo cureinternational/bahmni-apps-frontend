@@ -171,6 +171,7 @@ export {
   getMedicationConfig,
   getRegistrationConfig,
   getOrdersConfig,
+  getOrdersTableConfig,
   type ClinicalConfig,
   type DashboardConfig,
   type MedicationJSONConfig,
@@ -188,6 +189,8 @@ export {
   type OrdersConfig,
   type OrderExtension,
   type OrderExtensionParams,
+  type OrdersTableConfig,
+  type OrderColumnConfig,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';
