@@ -4,6 +4,7 @@ export {
   getMedicationConfig,
   getRegistrationConfig,
   getOrdersConfig,
+  getOrdersTableConfig,
 } from './configService';
 export {
   type ClinicalConfig,
@@ -26,3 +27,7 @@ export {
   type OrderExtension,
   type OrderExtensionParams,
 } from './models/ordersConfig';
+export {
+  type OrdersTableConfig,
+  type OrderColumnConfig,
+} from './models/ordersTableConfig';
