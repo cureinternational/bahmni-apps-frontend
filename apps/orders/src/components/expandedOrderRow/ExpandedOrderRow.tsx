@@ -24,8 +24,8 @@ export const ExpandedOrderRow: React.FC<ExpandedOrderRowProps> = ({
     <div className={styles.expandedOrderRow} data-testid="expanded-order-row">
       <div className={styles.emptyCell} />
       <div className={styles.emptyCell} />
-      <div className={styles.emptyCell} />
-      <div className={styles.emptyCell} />
+      <div className={styles.identifierCell}>{order.identifier}</div>
+      <div className={styles.patientNameCell}>{order.patientName}</div>
       <div className={styles.orderNameCell}>
         <Link
           href="#"

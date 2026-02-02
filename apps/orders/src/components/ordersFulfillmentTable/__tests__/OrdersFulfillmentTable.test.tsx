@@ -66,8 +66,8 @@ const mockRows: PatientOrderRow[] = [
 
 const mockHeaders = [
   { key: 'badge', header: '' },
-  { key: 'patientName', header: 'Patient Name' },
   { key: 'identifier', header: 'Identifier' },
+  { key: 'patientName', header: 'Patient Name' },
   { key: 'ordersPending', header: 'Orders Pending and Names' },
   { key: 'priority', header: 'Priority' },
   { key: 'status', header: 'Status' },
@@ -77,8 +77,8 @@ const mockHeaders = [
 ];
 
 const drugOrderHeaders = [
-  { key: 'patientName', header: 'Patient Name' },
   { key: 'identifier', header: 'Identifier' },
+  { key: 'patientName', header: 'Patient Name' },
 ];
 
 describe('OrdersFulfillmentTable', () => {

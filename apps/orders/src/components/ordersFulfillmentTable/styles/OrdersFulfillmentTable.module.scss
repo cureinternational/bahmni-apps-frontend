@@ -21,12 +21,12 @@ $row-height: 48px;
 
 $col-expand: 4%;
 $col-badge: 6%;
-$col-patient-name: 14%;
-$col-identifier: 10%;
-$col-orders: 16%;
+$col-identifier: 8%;
+$col-patient-name: 13%;
+$col-orders: 17%;
 $col-priority: 8%;
-$col-status: 9%;
-$col-provider: 9%;
+$col-status: 8%;
+$col-provider: 12%;
 $col-date-time: 11%;
 $col-owner: 13%;
 
@@ -54,14 +54,14 @@ $col-owner: 13%;
 
   thead tr th:nth-child(3),
   tbody tr td:nth-child(3) {
-    width: $col-patient-name;
-    min-width: 120px;
+    width: $col-identifier;
+    min-width: 100px;
   }
 
   thead tr th:nth-child(4),
   tbody tr td:nth-child(4) {
-    width: $col-identifier;
-    min-width: 100px;
+    width: $col-patient-name;
+    min-width: 120px;
   }
 
   thead tr th:nth-child(5),
@@ -78,15 +78,17 @@ $col-owner: 13%;
   }
 
   thead tr th:nth-child(7),
-  tbody tr td:nth-child(7) {
+  tbody tr td:nth-child(7),
+  tbody tr.cds--expanded-row td:nth-child(7) {
     width: $col-status;
-    min-width: 80px;
+    min-width: 60px;
   }
 
   thead tr th:nth-child(8),
-  tbody tr td:nth-child(8) {
+  tbody tr td:nth-child(8),
+  tbody tr.cds--expanded-row td:nth-child(8) {
     width: $col-provider;
-    min-width: 80px;
+    min-width: 120px;
   }
 
   thead tr th:nth-child(9),

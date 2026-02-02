@@ -7,6 +7,7 @@ import { ExpandedOrderRow } from '../expandedOrderRow';
 import { NewBadge } from '../newBadge';
 import { PriorityBadge } from '../priorityBadge';
 // Dummy caret SVG for Status header
+import drugOrderTableStyles from './styles/DrugOrderTable.module.scss';
 import styles from './styles/OrdersFulfillmentTable.module.scss';
 
 interface OrdersFulfillmentTableProps {
@@ -69,10 +70,21 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         return row.recentOrdersCount > 0 ? (
           <NewBadge count={row.recentOrdersCount} />
         ) : null;
-      case 'patientName':
-        return row.patientName;
       case 'identifier':
-        return (
+        return isDrugOrderTab ? (
+          <span className={drugOrderTableStyles.drugOrderCell}>
+            <Link
+              href="#"
+              onClick={(e: React.MouseEvent) => {
+                e.preventDefault();
+                onPatientClick?.(row.id);
+              }}
+              className={styles.identifierLink}
+            >
+              {row.identifier}
+            </Link>
+          </span>
+        ) : (
           <Link
             href="#"
             onClick={(e: React.MouseEvent) => {
@@ -83,6 +95,14 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
           >
             {row.identifier}
           </Link>
+        );
+      case 'patientName':
+        return isDrugOrderTab ? (
+          <span className={drugOrderTableStyles.drugOrderCell}>
+            {row.patientName}
+          </span>
+        ) : (
+          row.patientName
         );
       case 'ordersPending':
         return row.totalOrdersCount;
@@ -127,7 +147,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         renderExpandedContent={renderExpandedContent}
         loading={loading}
         emptyStateMessage={t('NO_ORDERS_FOUND')}
-        className={styles.ordersTable}
+        className={`${styles.ordersTable} ${drugOrderTableStyles.drugOrderTable}`}
       />
     );
   }
