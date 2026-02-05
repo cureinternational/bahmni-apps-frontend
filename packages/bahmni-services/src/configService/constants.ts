@@ -12,6 +12,7 @@ export const CLINICAL_CONFIG_URL = CLINICAL_V2_CONFIG_BASE_URL + '/app.json';
 export const REGISTRATION_CONFIG_URL =
   REGISTRATION_CONFIG_BASE_URL + '/app.json';
 export const ORDERS_CONFIG_URL = ORDERS_CONFIG_BASE_URL + '/extension.json';
+export const ORDERS_TABLE_CONFIG_URL = ORDERS_CONFIG_BASE_URL + '/app.json';
 export const MEDICATIONS_CONFIG_URL =
   CLINICAL_V2_CONFIG_BASE_URL + '/medication.json';
 export const DASHBOARD_CONFIG_URL = (dashboardURL: string) =>
