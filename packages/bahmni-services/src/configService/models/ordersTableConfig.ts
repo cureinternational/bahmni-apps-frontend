@@ -15,5 +15,5 @@ export interface OrderColumnConfig {
  */
 export interface OrdersTableConfig {
   ordersTableColumnHeaders: OrderColumnConfig[];
-  drugOrder: OrderColumnConfig[];
+  drugTabsColumnHeaders: OrderColumnConfig[];
 }

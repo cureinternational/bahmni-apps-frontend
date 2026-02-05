@@ -3,7 +3,7 @@
   "title": "Orders Table Configuration Schema",
   "description": "Schema for orders table configuration including column definitions",
   "type": "object",
-  "required": ["ordersTableColumnHeaders", "drugOrder"],
+  "required": ["ordersTableColumnHeaders", "drugTabsColumnHeaders"],
   "additionalProperties": true,
   "properties": {
     "ordersTableColumnHeaders": {
@@ -38,7 +38,7 @@
       },
       "minItems": 1
     },
-    "drugOrder": {
+    "drugTabsColumnHeaders": {
       "type": "array",
       "description": "Array of column configurations for the drug orders table",
       "items": {

@@ -50,7 +50,7 @@ export const OrdersConfigProvider: React.FC<OrdersConfigProviderProps> = ({
     [ordersTableConfig],
   );
   const drugOrderColumnConfigs = useMemo(
-    () => ordersTableConfig?.drugOrder ?? [],
+    () => ordersTableConfig?.drugTabsColumnHeaders ?? [],
     [ordersTableConfig],
   );
   const value = useMemo(

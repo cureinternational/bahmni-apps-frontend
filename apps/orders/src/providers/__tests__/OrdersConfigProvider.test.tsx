@@ -161,7 +161,7 @@ describe('OrdersConfigProvider', () => {
             sortable: true,
           },
         ],
-        drugOrder: [
+        drugTabsColumnHeaders: [
           {
             key: 'patientName',
             header: 'Patient Name',
@@ -203,7 +203,7 @@ describe('OrdersConfigProvider', () => {
         JSON.stringify(mockTableConfig.ordersTableColumnHeaders),
       );
       expect(screen.getByTestId('drug-order-column-configs').textContent).toBe(
-        JSON.stringify(mockTableConfig.drugOrder),
+        JSON.stringify(mockTableConfig.drugTabsColumnHeaders),
       );
     });
 
