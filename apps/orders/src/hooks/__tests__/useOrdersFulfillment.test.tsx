@@ -130,13 +130,17 @@ describe('useOrdersFulfillment', () => {
 
       // Check that all headers have isSortable property
       result.current.headers.forEach((header) => {
-        const headerWithSort = header as typeof header & { isSortable?: boolean };
+        const headerWithSort = header as typeof header & {
+          isSortable?: boolean;
+        };
         expect(headerWithSort).toHaveProperty('isSortable');
         expect(typeof headerWithSort.isSortable).toBe('boolean');
       });
 
       // Verify isSortable is set from config
-      const ownerHeader = result.current.headers.find((h) => h.key === 'owner') as typeof result.current.headers[0] & { isSortable?: boolean };
+      const ownerHeader = result.current.headers.find(
+        (h) => h.key === 'owner',
+      ) as (typeof result.current.headers)[0] & { isSortable?: boolean };
       expect(ownerHeader?.isSortable).toBe(true);
     });
 

@@ -112,7 +112,7 @@ export const SortableDataTable = <T extends { id: string }>({
                       key={header.key}
                       className={classnames(
                         headerProps.className,
-                        !isSortable ? styles.nonSortableHeader : ''
+                        !isSortable ? styles.nonSortableHeader : '',
                       )}
                     >
                       {header.header}

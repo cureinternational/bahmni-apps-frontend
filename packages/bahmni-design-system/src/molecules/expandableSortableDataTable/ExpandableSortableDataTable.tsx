@@ -137,7 +137,7 @@ export const ExpandableSortableDataTable = <
                       key={header.key}
                       className={classnames(
                         headerProps.className,
-                        !isSortable ? styles.nonSortableHeader : ''
+                        !isSortable ? styles.nonSortableHeader : '',
                       )}
                     >
                       {header.header}
@@ -151,7 +151,6 @@ export const ExpandableSortableDataTable = <
                 const originalRow = rowMap.get(row.id)!;
                 const isExpanded = expandedRows.has(row.id);
                 const isRowExpandable = originalRow.isExpandable !== false;
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { key: _key, ...rowProps } = getRowProps({ row });
 
                 return (
