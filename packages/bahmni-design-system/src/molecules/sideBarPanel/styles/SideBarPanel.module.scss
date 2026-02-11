@@ -8,8 +8,8 @@
   background: white;
   position: fixed;
   right: 0 !important;
-  top: 3rem;
-  height: calc(100% - 3rem);
+  top: 48px;
+  height: calc(100% - 48px);
   width: 40vw;
   z-index: 9999;
   overflow: hidden;
@@ -48,20 +48,17 @@
   background-color: white;
 }
 
-@include breakpoint-down(lg) {
+@media screen and (min-width: 1024px) {
   .sideBarNav {
-    width: 60vw;
+    width: 30%;
+    min-width: 540px;
   }
 }
 
-@include breakpoint-down(md) {
-  .sideBarNav {
-    width: 80vw;
-  }
-}
-
-@include breakpoint-down(sm) {
+@media screen and (max-width: 1055px) {
   .sideBarNav {
     width: 100vw;
+    left: 0;
+    right: 0;
   }
 }

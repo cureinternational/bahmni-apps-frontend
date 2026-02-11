@@ -32,5 +32,6 @@
   "DOB": "Fecha de Nacimiento",
   "APPLY": "Aplicar",
   "CANCEL": "Cancelar",
-  "SAVE": "Guardar"
+  "SAVE": "Guardar",
+  "CHOOSE_AN_OPTION": "Elegir una opción"
 }

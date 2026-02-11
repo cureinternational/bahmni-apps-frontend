@@ -1,7 +1,8 @@
 import { ExpandableSortableDataTable, Link } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useCallback } from 'react';
+import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import { PatientOrderRow, OrderStatus } from '../../models/orderFulfillment';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import { NewBadge } from '../newBadge';
@@ -28,28 +29,24 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   onOrderClick,
 }) => {
   const { t } = useTranslation();
+  const { ordersTableConfig } = useOrdersConfig();
   const statusHeaderRef = useRef<HTMLSpanElement>(null);
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
-  const [selectedStatuses, setSelectedStatuses] = useState<OrderStatus[]>([
-    'New',
-    'Acknowledged',
-    'In Progress',
-  ]);
 
-  const availableStatuses: OrderStatus[] = [
-    'New',
-    'Acknowledged',
-    'In Progress',
-    'Completed',
-  ];
+  const availableStatuses: OrderStatus[] =
+    ordersTableConfig?.orderStatusesAvailable as OrderStatus[];
+
+  const [selectedStatuses, setSelectedStatuses] = useState<OrderStatus[]>(
+    ordersTableConfig?.orderStatusesPreSelected as OrderStatus[],
+  );
 
   const handleStatusFilterApply = (statuses: OrderStatus[]) => {
     setSelectedStatuses(statuses);
   };
 
-  const toggleStatusFilter = () => {
+  const toggleStatusFilter = useCallback(() => {
     setIsStatusFilterOpen(!isStatusFilterOpen);
-  };
+  }, [isStatusFilterOpen]);
 
   const customHeaders = useMemo(
     () =>
@@ -69,7 +66,6 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
                     className={styles.statusCaret}
                     aria-hidden="true"
                     onClick={toggleStatusFilter}
-                    style={{ cursor: 'pointer' }}
                   >
                     <path
                       d="M4 6L8 10L12 6"
@@ -92,7 +88,13 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
             }
           : h,
       ),
-    [headers, isStatusFilterOpen, selectedStatuses],
+    [
+      availableStatuses,
+      headers,
+      isStatusFilterOpen,
+      selectedStatuses,
+      toggleStatusFilter,
+    ],
   );
 
   const renderCell = (row: PatientOrderRow, cellId: string) => {

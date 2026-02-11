@@ -1,11 +1,11 @@
 import { useTranslation } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
-import { TextArea } from '@carbon/react';
+import { Select, SelectItem, TextArea } from '@carbon/react';
 import React, { useState } from 'react';
-import { FormattedMessage } from 'react-intl';
-import { Button } from '../../../../../packages/bahmni-design-system/src/atoms/button';
+import { SaveAndCancelButtons } from '../../../../../packages/bahmni-design-system/src/molecules/saveAndCancelButtons';
+import { availableProviders } from '../../__mocks__/ordersMockData';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
-import { Order } from '../../models/orderFulfillment';
+import { Order, OrderStatus } from '../../models/orderFulfillment';
 import styles from './styles/OrderFulfillmentSlider.module.scss';
 
 interface OrderFulfillmentSliderProps {
@@ -22,9 +22,14 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const { t } = useTranslation();
   const { ordersTableConfig } = useOrdersConfig();
   const [notes, setNotes] = useState('');
+  const [status, setStatus] = useState<OrderStatus | ''>('');
+  const [owner, setOwner] = useState('');
+
+  const availableStatuses: OrderStatus[] =
+    ordersTableConfig?.orderStatusesAvailable as OrderStatus[];
 
   const patientDetailFields =
-    ordersTableConfig?.manageOrdersPanelPatientDetails;
+    ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];
 
   const getNestedValue = (obj: Order, key: string): string => {
     const keys = key.split('.');
@@ -63,15 +68,12 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
         <div className={styles.orderName}>{order.orderName}</div>
       </div>
       <div className={styles.sliderContent}>
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>{t('PROVIDER_COMMENTS')}</h3>
-          <p className={styles.commentsText}>
-            Post-operative X-ray for assessing healing or implant position |
-            Monitoring of progress for alignment / comparative purposes | High
-            Risk | Request from ward | Request from clinic | Pre-operative X-ray
-            for diagnostic or planning purposes
-          </p>
-        </section>
+        {order.providerComments && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>{t('PROVIDER_COMMENTS')}</h3>
+            <p className={styles.commentsText}>{order.providerComments}</p>
+          </section>
+        )}
 
         {patientDetailFields.length > 0 && (
           <section className={styles.section}>
@@ -96,28 +98,41 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
 
         <section className={styles.formSection}>
           <div className={styles.formField}>
-            <label className={styles.formLabel}>Rehab order owner</label>
-            <select className={styles.dropdown} defaultValue="">
-              <option value="" disabled>
-                Choose an option
-              </option>
-              <option value="provider1">Dr. Smith</option>
-              <option value="provider2">Dr. Johnson</option>
-              <option value="provider3">Dr. Williams</option>
-            </select>
+            <Select
+              id="order-owner-select"
+              data-testid="order-owner-select"
+              labelText="Rehab order owner"
+              value={owner}
+              onChange={(e) => setOwner(e.target.value)}
+            >
+              <SelectItem value="" text={t('CHOOSE_AN_OPTION')} />
+              {availableProviders.map((provider) => (
+                <SelectItem
+                  key={provider.id}
+                  value={provider.id}
+                  text={provider.name}
+                />
+              ))}
+            </Select>
           </div>
 
           <div className={styles.formField}>
-            <label className={styles.formLabel}>{t('STATUS')}</label>
-            <select className={styles.dropdown} defaultValue="">
-              <option value="" disabled>
-                Choose an option
-              </option>
-              <option value="new">New</option>
-              <option value="in-progress">In Progress</option>
-              <option value="acknowledged">Acknowledged</option>
-              <option value="completed">Completed</option>
-            </select>
+            <Select
+              id="order-status-select"
+              data-testid="order-status-select"
+              labelText={t('STATUS')}
+              value={status}
+              onChange={(e) => setStatus(e.target.value as OrderStatus)}
+            >
+              <SelectItem value="" text={t('CHOOSE_AN_OPTION')} />
+              {availableStatuses.map((statusOption) => (
+                <SelectItem
+                  key={statusOption}
+                  value={statusOption}
+                  text={statusOption}
+                />
+              ))}
+            </Select>
           </div>
 
           <TextArea
@@ -131,23 +146,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
         </section>
       </div>
 
-      <div className={styles.actionButtons}>
-        <Button
-          kind="secondary"
-          data-testid="cancel"
-          onClick={onClose}
-          className={styles.cancelButton}
-        >
-          <span>
-            <FormattedMessage id={'CANCEL'} defaultMessage={'Cancel'} />
-          </span>
-        </Button>
-        <Button kind="primary" data-testid="save" className={styles.saveButton}>
-          <span>
-            <FormattedMessage id={'SAVE'} defaultMessage={'Save'} />
-          </span>
-        </Button>
-      </div>
+      <SaveAndCancelButtons onSave={() => {}} onClose={onClose} />
     </div>
   );
 };

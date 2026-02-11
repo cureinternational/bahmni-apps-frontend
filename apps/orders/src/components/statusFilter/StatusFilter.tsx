@@ -23,7 +23,8 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
   onToggle,
   anchorRef,
 }) => {
-  const [tempSelection, setTempSelection] = useState<OrderStatus[]>(selectedStatuses);
+  const [tempSelection, setTempSelection] =
+    useState<OrderStatus[]>(selectedStatuses);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -77,6 +78,7 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
     <div
       ref={dropdownRef}
       className={styles.filterDropdown}
+      // eslint-disable-next-line react/forbid-dom-props
       style={{
         position: 'fixed',
         top: `${dropdownPosition.top}px`,

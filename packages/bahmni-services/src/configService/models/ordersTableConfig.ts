@@ -26,4 +26,6 @@ export interface OrdersTableConfig {
   ordersTableColumnHeaders: OrderColumnConfig[];
   drugTabsColumnHeaders: OrderColumnConfig[];
   manageOrdersPanelPatientDetails?: PatientDetailField[];
+  orderStatusesAvailable?: string[];
+  orderStatusesPreSelected?: string[];
 }

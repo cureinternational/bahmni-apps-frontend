@@ -15,12 +15,12 @@ import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
 import { useOrdersConfig } from '../hooks/useOrdersConfig';
 import { useOrdersFulfillment } from '../hooks/useOrdersFulfillment';
 import { useOrdersTabCounts } from '../hooks/useOrdersTabCounts';
-import { Order } from '../models/orderFulfillment';
+import { Order, PatientOrderRow } from '../models/orderFulfillment';
 import styles from './styles/OrdersPage.module.scss';
 
 interface OrdersTabContentProps {
   tabLabel: string;
-  onOrderClick: (orderId: string, rows: any[]) => void;
+  onOrderClick: (orderId: string, rows: PatientOrderRow[]) => void;
 }
 
 const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
@@ -67,7 +67,7 @@ export const OrdersPage: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
 
-  const handleOrderClick = (orderId: string, rows: any[]) => {
+  const handleOrderClick = (orderId: string, rows: PatientOrderRow[]) => {
     for (const patientRow of rows) {
       const order = patientRow.orders.find((o: Order) => o.id === orderId);
       if (order) {

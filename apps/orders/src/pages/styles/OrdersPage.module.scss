@@ -108,3 +108,8 @@
     max-height: 50vh;
   }
 }
+
+:global(.cds--content) {
+  padding: 0;
+  height: 100dvh;
+}
