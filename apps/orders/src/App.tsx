@@ -36,21 +36,19 @@ const OrdersApp: React.FC = () => {
     return <div>Loading...</div>;
   }
   return (
-    <Content>
-      <NotificationProvider>
-        <NotificationServiceComponent />
-        <QueryClientProvider client={queryClient}>
-          <OrdersConfigProvider>
-            <UserPrivilegeProvider>
-              <Routes>
-                <Route path="/search" element={<OrdersPage />} />
-              </Routes>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </UserPrivilegeProvider>
-          </OrdersConfigProvider>
-        </QueryClientProvider>
-      </NotificationProvider>
-    </Content>
+    <NotificationProvider>
+      <NotificationServiceComponent />
+      <QueryClientProvider client={queryClient}>
+        <OrdersConfigProvider>
+          <UserPrivilegeProvider>
+            <Routes>
+              <Route path="/search" element={<OrdersPage />} />
+            </Routes>
+            <ReactQueryDevtools initialIsOpen={false} />
+          </UserPrivilegeProvider>
+        </OrdersConfigProvider>
+      </QueryClientProvider>
+    </NotificationProvider>
   );
 };
 export { OrdersApp };

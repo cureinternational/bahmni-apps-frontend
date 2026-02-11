@@ -1,12 +1,12 @@
 import { ExpandableSortableDataTable, Link } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
-import React, { useMemo } from 'react';
-import { PatientOrderRow } from '../../models/orderFulfillment';
+import React, { useMemo, useState, useRef } from 'react';
+import { PatientOrderRow, OrderStatus } from '../../models/orderFulfillment';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import { NewBadge } from '../newBadge';
 import { PriorityBadge } from '../priorityBadge';
-// Dummy caret SVG for Status header
+import { StatusFilter } from '../statusFilter';
 import drugOrderTableStyles from './styles/DrugOrderTable.module.scss';
 import styles from './styles/OrdersFulfillmentTable.module.scss';
 
@@ -28,8 +28,29 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   onOrderClick,
 }) => {
   const { t } = useTranslation();
+  const statusHeaderRef = useRef<HTMLSpanElement>(null);
+  const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
+  const [selectedStatuses, setSelectedStatuses] = useState<OrderStatus[]>([
+    'New',
+    'Acknowledged',
+    'In Progress',
+  ]);
 
-  // Custom header renderer for Status column with dummy caret
+  const availableStatuses: OrderStatus[] = [
+    'New',
+    'Acknowledged',
+    'In Progress',
+    'Completed',
+  ];
+
+  const handleStatusFilterApply = (statuses: OrderStatus[]) => {
+    setSelectedStatuses(statuses);
+  };
+
+  const toggleStatusFilter = () => {
+    setIsStatusFilterOpen(!isStatusFilterOpen);
+  };
+
   const customHeaders = useMemo(
     () =>
       headers.map((h) =>
@@ -37,7 +58,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
           ? {
               ...h,
               header: (
-                <span className={styles.statusHeader}>
+                <span ref={statusHeaderRef} className={styles.statusHeader}>
                   Status
                   <svg
                     width="16"
@@ -47,6 +68,8 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
                     xmlns="http://www.w3.org/2000/svg"
                     className={styles.statusCaret}
                     aria-hidden="true"
+                    onClick={toggleStatusFilter}
+                    style={{ cursor: 'pointer' }}
                   >
                     <path
                       d="M4 6L8 10L12 6"
@@ -56,12 +79,20 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
                       strokeLinejoin="round"
                     />
                   </svg>
+                  <StatusFilter
+                    availableStatuses={availableStatuses}
+                    selectedStatuses={selectedStatuses}
+                    onApply={handleStatusFilterApply}
+                    isOpen={isStatusFilterOpen}
+                    onToggle={toggleStatusFilter}
+                    anchorRef={statusHeaderRef}
+                  />
                 </span>
               ),
             }
           : h,
       ),
-    [headers],
+    [headers, isStatusFilterOpen, selectedStatuses],
   );
 
   const renderCell = (row: PatientOrderRow, cellId: string) => {

@@ -30,4 +30,5 @@ export {
 export {
   type OrdersTableConfig,
   type OrderColumnConfig,
+  type PatientDetailField,
 } from './models/ordersTableConfig';
