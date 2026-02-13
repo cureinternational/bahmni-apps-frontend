@@ -29,9 +29,12 @@
   "PROVIDER_COMMENTS": "Commentaires du Prestataire",
   "PATIENT_DETAILS": "Détails du Patient",
   "AGE": "Âge",
+  "GENDER": "Genre",
   "DOB": "Date de Naissance",
   "APPLY": "Appliquer",
   "CANCEL": "Annuler",
   "SAVE": "Enregistrer",
-  "CHOOSE_AN_OPTION": "Choisir une option"
+  "CHOOSE_AN_OPTION": "Choisir une option",
+  "ORDER_OWNER":  "Propriétaire de l'Ordonnance",
+  "NOTES": "Remarques"
 }

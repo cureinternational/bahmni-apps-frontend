@@ -1,6 +1,6 @@
 import { useTranslation } from '@bahmni/services';
 import { Close } from '@carbon/icons-react';
-import { Select, SelectItem, TextArea } from '@carbon/react';
+import { ComboBox, TextArea } from '@carbon/react';
 import React, { useState } from 'react';
 import { SaveAndCancelButtons } from '../../../../../packages/bahmni-design-system/src/molecules/saveAndCancelButtons';
 import { availableProviders } from '../../__mocks__/ordersMockData';
@@ -43,6 +43,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     }
     return value !== undefined && value !== null ? String(value) : '';
   };
+
+  const hasChanges = Boolean(owner || status || notes.trim());
 
   if (!isOpen || !order) {
     return null;
@@ -98,55 +100,78 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
 
         <section className={styles.formSection}>
           <div className={styles.formField}>
-            <Select
+            <ComboBox
               id="order-owner-select"
               data-testid="order-owner-select"
-              labelText="Rehab order owner"
-              value={owner}
-              onChange={(e) => setOwner(e.target.value)}
-            >
-              <SelectItem value="" text={t('CHOOSE_AN_OPTION')} />
-              {availableProviders.map((provider) => (
-                <SelectItem
-                  key={provider.id}
-                  value={provider.id}
-                  text={provider.name}
-                />
-              ))}
-            </Select>
+              titleText={t('ORDER_OWNER')}
+              placeholder={t('CHOOSE_AN_OPTION')}
+              items={availableProviders}
+              itemToString={(item) => (item ? item.name : '')}
+              shouldFilterItem={({ item, inputValue }) => {
+                if (!inputValue) return true;
+                return item.name
+                  .toLowerCase()
+                  .includes(inputValue.toLowerCase());
+              }}
+              selectedItem={
+                availableProviders.find((p) => p.id === owner) ?? null
+              }
+              onChange={({ selectedItem }) =>
+                setOwner(selectedItem ? selectedItem.id : '')
+              }
+            />
           </div>
 
           <div className={styles.formField}>
-            <Select
+            <ComboBox
               id="order-status-select"
               data-testid="order-status-select"
-              labelText={t('STATUS')}
-              value={status}
-              onChange={(e) => setStatus(e.target.value as OrderStatus)}
-            >
-              <SelectItem value="" text={t('CHOOSE_AN_OPTION')} />
-              {availableStatuses.map((statusOption) => (
-                <SelectItem
-                  key={statusOption}
-                  value={statusOption}
-                  text={statusOption}
-                />
-              ))}
-            </Select>
+              titleText={t('STATUS')}
+              placeholder={t('CHOOSE_AN_OPTION')}
+              items={availableStatuses.map((s) => ({ id: s, value: s }))}
+              itemToString={(item) => (item ? item.value : '')}
+              selectedItem={
+                availableStatuses
+                  .map((s) => ({ id: s, value: s }))
+                  .find((s) => s.id === status) ?? null
+              }
+              onChange={({ selectedItem }) =>
+                setStatus(selectedItem ? (selectedItem.id as OrderStatus) : '')
+              }
+              onKeyDown={(e: React.KeyboardEvent) => {
+                const allowedKeys = [
+                  'ArrowDown',
+                  'ArrowUp',
+                  'Enter',
+                  'Escape',
+                  'Tab',
+                ];
+                if (!allowedKeys.includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              className={styles.statusComboBox}
+            />
           </div>
 
           <TextArea
             id="order-notes"
             data-testid="order-notes"
+            labelText=""
             rows={4}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notes"
+            placeholder={t('NOTES')}
+            className={styles.notesField}
           />
         </section>
       </div>
 
-      <SaveAndCancelButtons onSave={() => {}} onClose={onClose} />
+      <SaveAndCancelButtons
+        onSave={() => {}}
+        onClose={onClose}
+        isSaveDisabled={!hasChanges}
+      />
     </div>
   );
 };

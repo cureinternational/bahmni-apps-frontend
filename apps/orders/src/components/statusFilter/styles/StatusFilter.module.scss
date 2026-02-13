@@ -2,6 +2,9 @@
 @use "@carbon/react/scss/theme" as *;
 
 .filterDropdown {
+  position: fixed;
+  top: var(--dropdown-top, 0);
+  left: var(--dropdown-left, 0);
   min-width: 160px;
   background-color: #ffffff;
   border: 1px solid var(--cds-border-subtle);
@@ -13,7 +16,7 @@
 .filterContent {
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1rem 1rem 1rem;
 }
 
 .checkboxList {

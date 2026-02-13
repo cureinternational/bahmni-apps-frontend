@@ -26,7 +26,6 @@
 
 .contentContainerWithSlider {
   width: 70%;
-  flex: none;
   min-width: 0;
 }
 
@@ -45,8 +44,9 @@
   border: 1px solid $border-subtle-01;
   border-radius: $spacing-02;
   padding: $spacing-05;
-  margin-top: $spacing-05;
+  margin-top: 4rem;
   min-width: 0;
+  box-shadow: 0px 6px 6px 0px #00000033;
 }
 
 .tabList {
@@ -91,21 +91,15 @@
   text-align: center;
 }
 
-@media (max-width: 1055px) {
+@media (max-width: 1023px) {
   .mainContentWrapper {
     flex-direction: column;
   }
 
-  .contentContainer,
-  .contentContainerWithSlider {
-    width: 100%;
-    flex: 1;
-  }
-
   .sliderContainer {
     width: 100%;
-    min-width: unset;
-    max-height: 50vh;
+    min-width: 540px;
+    height: 100%;
   }
 }
 

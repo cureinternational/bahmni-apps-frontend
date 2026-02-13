@@ -29,9 +29,12 @@
   "PROVIDER_COMMENTS": "Comentarios del Proveedor",
   "PATIENT_DETAILS": "Detalles del Paciente",
   "AGE": "Edad",
+  "GENDER": "Género",
   "DOB": "Fecha de Nacimiento",
   "APPLY": "Aplicar",
   "CANCEL": "Cancelar",
   "SAVE": "Guardar",
-  "CHOOSE_AN_OPTION": "Elegir una opción"
+  "CHOOSE_AN_OPTION": "Elegir una opción",
+  "ORDER_OWNER": "Propietario de la Orden",
+  "NOTES": "Notas"
 }

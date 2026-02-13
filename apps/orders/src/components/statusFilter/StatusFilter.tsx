@@ -34,11 +34,23 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
 
   useEffect(() => {
     if (isOpen && anchorRef.current) {
-      const rect = anchorRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-      });
+      const thElement = anchorRef.current.closest('th');
+      const trElement = thElement?.closest('tr');
+
+      if (trElement) {
+        const trRect = trElement.getBoundingClientRect();
+        const anchorRect = anchorRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: trRect.bottom + window.scrollY,
+          left: anchorRect.left + window.scrollX,
+        });
+      } else {
+        const rect = anchorRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY,
+          left: rect.left + window.scrollX,
+        });
+      }
     }
   }, [isOpen, anchorRef]);
 
@@ -78,12 +90,13 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
     <div
       ref={dropdownRef}
       className={styles.filterDropdown}
-      // eslint-disable-next-line react/forbid-dom-props
-      style={{
-        position: 'fixed',
-        top: `${dropdownPosition.top}px`,
-        left: `${dropdownPosition.left}px`,
-      }}
+      // eslint-disable-next-line react/forbid-dom-props -- Dynamic positioning requires inline styles
+      style={
+        {
+          '--dropdown-top': `${dropdownPosition.top}px`,
+          '--dropdown-left': `${dropdownPosition.left}px`,
+        } as React.CSSProperties
+      }
     >
       <div className={styles.filterContent}>
         <div className={styles.checkboxList}>

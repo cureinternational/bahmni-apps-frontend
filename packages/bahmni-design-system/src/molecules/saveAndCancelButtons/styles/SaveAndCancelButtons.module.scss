@@ -16,6 +16,10 @@
   flex: 1;
   border-radius: 0;
   font-weight: 400;
+  min-height: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
 
   span {
     font-weight: 400;
@@ -43,33 +47,47 @@
 }
 
 :global(.cds--btn.cds--btn--primary).saveButton {
-  background-color: $layer-accent-01 !important;
-  color: $text-primary !important;
-  border: 1px solid $layer-accent-01 !important;
+  background-color: #0f62fe !important;
+  color: #ffffff !important;
+  border: 1px solid #0f62fe !important;
 
   span {
-    color: $text-primary !important;
+    color: #ffffff !important;
   }
 
   &:hover {
-    background-color: $layer-accent-hover-01 !important;
-    border-color: $layer-accent-hover-01 !important;
+    background-color: #0353e9 !important;
+    border-color: #0353e9 !important;
   }
 
   &:focus {
-    border-color: $layer-accent-01 !important;
-    box-shadow: inset 0 0 0 1px $layer-accent-01, inset 0 0 0 2px $background !important;
+    border-color: #0f62fe !important;
+    box-shadow: inset 0 0 0 1px #0f62fe, inset 0 0 0 2px #ffffff !important;
   }
 
   &:disabled {
-    opacity: 0.5;
+    background-color: #c6c6c6 !important;
+    border-color: #c6c6c6 !important;
+    color: #8d8d8d !important;
+    opacity: 1;
     cursor: not-allowed;
+
+    span {
+      color: #8d8d8d !important;
+    }
   }
 }
 
 @media (max-width: 1055px) {
   .footer {
     width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    z-index: 10;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .saveButton,

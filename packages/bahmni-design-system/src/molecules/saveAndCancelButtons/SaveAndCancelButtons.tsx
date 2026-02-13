@@ -20,6 +20,7 @@ export const SaveAndCancelButtons: React.FC<SaveAndCancelButtonsProps> = ({
     <div className={styles.footer}>
       <Button
         kind="secondary"
+        size="lg"
         data-testid="cancel"
         onClick={onClose}
         className={styles.cancelButton}
@@ -30,6 +31,7 @@ export const SaveAndCancelButtons: React.FC<SaveAndCancelButtonsProps> = ({
       </Button>
       <Button
         kind="primary"
+        size="lg"
         onClick={onSave}
         disabled={isSaveDisabled}
         data-testid="save"

@@ -191,8 +191,9 @@
 
 .separator {
   height: 1px;
-  background-color: #e0e0e0;
-  margin: 0;
+  background-color: #c6c6c6;
+  margin: 10px 0;
+  flex-shrink: 0;
 }
 
 .patientDetailsGrid {
@@ -211,7 +212,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-top: 20px;
+  margin-top: 0;
   width: 100%;
   max-width: 100%;
 }
@@ -222,6 +223,16 @@
   gap: 10px;
   width: 100%;
   max-width: 100%;
+}
+
+.notesField {
+  margin-top: 20px;
+}
+
+.statusComboBox {
+  :global(.cds--text-input) {
+    caret-color: transparent;
+  }
 }
 
 .required {
@@ -247,6 +258,12 @@
 
   .drug-chart-note-acknowledgement__textarea {
     margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 1055px) {
+  .sliderContent {
+    padding-bottom: 80px;
   }
 }
 

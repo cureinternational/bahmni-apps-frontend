@@ -55,10 +55,12 @@
   }
 }
 
+.sideBarNav {
+  top: 48px;
+}
 @media screen and (max-width: 1055px) {
   .sideBarNav {
-    width: 100vw;
-    left: 0;
-    right: 0;
+    width: 100%;
+    height: 100vh;
   }
 }
