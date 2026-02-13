@@ -354,7 +354,7 @@ describe('OrderFulfillmentSlider', () => {
 
       const notesTextarea = screen.getByTestId('order-notes');
       expect(notesTextarea).toBeInTheDocument();
-      expect(notesTextarea).toHaveAttribute('placeholder', 'Notes');
+      expect(notesTextarea).toHaveAttribute('placeholder', 'NOTES');
     });
 
     it('updates notes value when typing', () => {

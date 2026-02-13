@@ -6,7 +6,7 @@ exports[`SaveAndCancelButtons Happy Paths should match snapshot 1`] = `
     class="footer-class"
   >
     <button
-      class="cancelButton-class cds--btn cds--btn--secondary"
+      class="cancelButton-class cds--btn cds--btn--lg cds--layout--size-lg cds--btn--secondary"
       type="button"
     >
       <span>
@@ -16,7 +16,7 @@ exports[`SaveAndCancelButtons Happy Paths should match snapshot 1`] = `
       </span>
     </button>
     <button
-      class="saveButton-class cds--btn cds--btn--primary"
+      class="saveButton-class cds--btn cds--btn--lg cds--layout--size-lg cds--btn--primary"
       type="button"
     >
       <span>
