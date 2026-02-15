@@ -10,6 +10,7 @@
     "@bahmni/form2-controls": "0.0.2-dev.18",
     "@tanstack/react-query": "^5.85.5",
     "@types/fhir": "^0.0.41",
+    "moment": "^2.30.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.12.0",
