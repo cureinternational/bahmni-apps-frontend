@@ -57,7 +57,6 @@ export const transformOrderData = (
       urgentCount: urgentOrders,
       isExpandable: true,
       orders: ordersDetails,
-      stringified: JSON.parse(order.orders.replace(/\n/g, '\\n')),
     };
   });
 };

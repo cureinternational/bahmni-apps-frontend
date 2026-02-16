@@ -139,6 +139,7 @@
   :global(.cds--table-sort) {
     pointer-events: none !important;
     cursor: default !important;
+    padding-inline: 1rem;
   }
 
   :global(.cds--table-sort__icon),
