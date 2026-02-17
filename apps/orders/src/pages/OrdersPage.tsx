@@ -15,6 +15,7 @@ import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
 import { useOrdersConfig } from '../hooks/useOrdersConfig';
 import { useOrdersFulfillment } from '../hooks/useOrdersFulfillment';
 import { Order, PatientOrderRow } from '../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../models/ordersConfig';
 import useOrdersStore from '../stores/ordersStore';
 import styles from './styles/OrdersPage.module.scss';
 
@@ -51,13 +52,43 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 
     const searchTerm = searchInput.trim().toLowerCase();
 
-    return rows.filter((row) => {
-      // Search by patient name or identifier
-      const matchesPatientName = row.patientName?.toLowerCase().includes(searchTerm);
-      const matchesIdentifier = row.identifier?.toLowerCase().includes(searchTerm);
+    return rows
+      .map((row) => {
+        // Search by patient name or identifier
+        const matchesPatientName = row.patientName?.toLowerCase().includes(searchTerm);
+        const matchesIdentifier = row.identifier?.toLowerCase().includes(searchTerm);
 
-      return matchesPatientName || matchesIdentifier;
-    });
+        // If patient name or identifier matches, return the whole row
+        if (matchesPatientName || matchesIdentifier) {
+          return row;
+        }
+
+        // Filter orders by owner or provider name
+        const matchingOrders = row.orders.filter((order) => {
+          const matchesOwner = order.owner?.toLowerCase().includes(searchTerm);
+          const matchesProvider = order.provider?.toLowerCase().includes(searchTerm);
+          return matchesOwner || matchesProvider;
+        });
+
+        // If no orders match, exclude this patient
+        if (matchingOrders.length === 0) {
+          return null;
+        }
+
+        // Calculate urgent count for filtered orders
+        const urgentCount = matchingOrders.filter(
+          (order) => order.priority === ORDER_PRIORITY.STAT,
+        ).length;
+
+        // Return patient with only matching orders
+        return {
+          ...row,
+          orders: matchingOrders,
+          totalOrdersCount: matchingOrders.length,
+          urgentCount,
+        };
+      })
+      .filter((row) => row !== null) as PatientOrderRow[];
   }, [ordersData, tabLabel, searchInput]);
 
   return (
