@@ -8,7 +8,7 @@ import {
   Search,
 } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
 import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
@@ -40,6 +40,26 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
     setSearchInput(event.target.value);
   };
 
+  // Filter rows based on search input (min 3 characters)
+  const filteredRows = useMemo(() => {
+    const rows = ordersData[tabLabel] || [];
+
+    // Return all rows if search is empty or less than 3 characters
+    if (!searchInput || searchInput.trim().length < 3) {
+      return rows;
+    }
+
+    const searchTerm = searchInput.trim().toLowerCase();
+
+    return rows.filter((row) => {
+      // Search by patient name or identifier
+      const matchesPatientName = row.patientName?.toLowerCase().includes(searchTerm);
+      const matchesIdentifier = row.identifier?.toLowerCase().includes(searchTerm);
+
+      return matchesPatientName || matchesIdentifier;
+    });
+  }, [ordersData, tabLabel, searchInput]);
+
   return (
     <div className={styles.tabContent}>
       <div className={styles.searchContainer}>
@@ -54,7 +74,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
       </div>
       <div className={styles.ordersTable}>
         <OrdersFulfillmentTable
-          rows={ordersData[tabLabel]}
+          rows={filteredRows}
           headers={headers}
           loading={isLoading}
           isDrugOrderTab={isDrugOrderTab}
