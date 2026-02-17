@@ -112,7 +112,13 @@ export const ExpandableSortableDataTable = <
       className={classnames(className, styles.expandableDataTableBody)}
       data-testid="expandable-sortable-data-table"
     >
-      <DataTable key={tableKey} rows={rows} headers={headers} isSortable size="md">
+      <DataTable
+        key={tableKey}
+        rows={rows}
+        headers={headers}
+        isSortable
+        size="md"
+      >
         {({
           rows: tableRows,
           headers: tableHeaders,

@@ -55,8 +55,12 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
     return rows
       .map((row) => {
         // Search by patient name or identifier
-        const matchesPatientName = row.patientName?.toLowerCase().includes(searchTerm);
-        const matchesIdentifier = row.identifier?.toLowerCase().includes(searchTerm);
+        const matchesPatientName = row.patientName
+          ?.toLowerCase()
+          .includes(searchTerm);
+        const matchesIdentifier = row.identifier
+          ?.toLowerCase()
+          .includes(searchTerm);
 
         // If patient name or identifier matches, return the whole row
         if (matchesPatientName || matchesIdentifier) {
@@ -65,8 +69,10 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 
         // Filter orders by owner or provider name
         const matchingOrders = row.orders.filter((order) => {
-          const matchesOwner = order.owner?.toLowerCase().includes(searchTerm);
-          const matchesProvider = order.provider?.toLowerCase().includes(searchTerm);
+          const matchesOwner =
+            order.owner?.toLowerCase().includes(searchTerm) ?? false;
+          const matchesProvider =
+            order.provider?.toLowerCase().includes(searchTerm) ?? false;
           return matchesOwner || matchesProvider;
         });
 
