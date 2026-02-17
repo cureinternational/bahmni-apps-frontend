@@ -29,10 +29,15 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 }) => {
   const { t } = useTranslation();
   const { headers, isLoading, isDrugOrderTab } = useOrdersFulfillment(tabLabel);
+  const [searchInput, setSearchInput] = useState('');
 
   const { ordersData } = useOrdersStore();
   const handleOrderClick = (orderId: string) => {
     onOrderClick(orderId, ordersData[tabLabel]);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(event.target.value);
   };
 
   return (
@@ -43,7 +48,8 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           labelText={t('SEARCH_ORDERS_LABEL')}
           closeButtonLabelText={t('CLEAR_SEARCH_INPUT')}
           size="md"
-          onChange={() => {}}
+          value={searchInput}
+          onChange={handleSearchChange}
         />
       </div>
       <div className={styles.ordersTable}>
