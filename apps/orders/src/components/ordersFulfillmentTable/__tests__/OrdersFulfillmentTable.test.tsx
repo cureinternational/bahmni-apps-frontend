@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { PatientOrderRow } from '../../../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../../../models/ordersConfig';
 import { OrdersFulfillmentTable } from '../OrdersFulfillmentTable';
 
 jest.mock('@bahmni/services', () => ({
@@ -33,7 +34,7 @@ const mockRows: PatientOrderRow[] = [
         id: 'order-1-1',
         orderName: 'New Cast - Plaster',
         orderType: 'Rehab Order',
-        priority: 'Urgent',
+        priority: ORDER_PRIORITY.STAT,
         status: 'New',
         provider: 'Mike Ronoh',
         dateTime: '12 Nov 25 04:24 PM',
@@ -43,7 +44,7 @@ const mockRows: PatientOrderRow[] = [
         id: 'order-1-2',
         orderName: 'Rehab Therapy - Limb',
         orderType: 'Rehab Order',
-        priority: 'Routine',
+        priority: ORDER_PRIORITY.ROUTINE,
         status: 'In Progress',
         provider: 'Mike Ronoh',
         dateTime: '12 Nov 25 04:24 PM',
@@ -64,7 +65,7 @@ const mockRows: PatientOrderRow[] = [
         id: 'order-2-1',
         orderName: 'Physiotherapy Evaluation',
         orderType: 'Rehab Order',
-        priority: 'Routine',
+        priority: ORDER_PRIORITY.ROUTINE,
         status: 'In Progress',
         provider: 'Sarah Kimani',
         dateTime: '12 Nov 25 03:15 PM',
@@ -164,13 +165,7 @@ describe('OrdersFulfillmentTable', () => {
 
   it('calls onPatientClick when identifier is clicked', () => {
     const onPatientClick = jest.fn();
-    render(
-      <OrdersFulfillmentTable
-        rows={mockRows}
-        headers={mockHeaders}
-        onPatientClick={onPatientClick}
-      />,
-    );
+    render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
 
     const identifierLink = screen.getByRole('link', { name: 'CRK262350' });
     fireEvent.click(identifierLink);
