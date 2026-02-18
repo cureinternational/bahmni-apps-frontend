@@ -5,6 +5,8 @@ import {
   getCurrentUser,
   OrderResponseItem,
   User,
+  fetchProvidersByTab,
+  Provider,
 } from '@bahmni/services';
 import moment from 'moment';
 import { create } from 'zustand';
@@ -72,9 +74,11 @@ export interface OrdersStoreState {
   setCurrentLocation: () => void;
   fetchOrdersForTab: (selected: number) => void;
   fetchAllPendingOrders: (tabs: OrderTab[]) => void;
+  fetchProviders: (tabLabel: string) => void;
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
   ordersData: Record<string, PatientOrderRow[]>;
+  providers: Record<string, Provider[]>;
 }
 
 export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
@@ -85,6 +89,7 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
   currentUser: {} as User,
   currentLocation: { name: '', uuid: '' },
   ordersData: {},
+  providers: {},
   setSelectedIndex: (selected: number) => set({ selectedIndex: selected }),
   fetchCurrentUser: async () => {
     const userData = await getCurrentUser();
@@ -161,6 +166,26 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
       }));
     } finally {
       setIsLoading(false);
+    }
+  },
+  fetchProviders: async (tabLabel: string) => {
+    const { providers: existingProviders } = get();
+
+    if (existingProviders[tabLabel]) {
+      return;
+    }
+
+    try {
+      const providers = await fetchProvidersByTab(tabLabel);
+      set((state) => ({
+        ...state,
+        providers: {
+          ...state.providers,
+          [tabLabel]: providers,
+        },
+      }));
+    } catch (error) {
+      console.error(`Error fetching providers for tab ${tabLabel}:`, error);
     }
   },
   setIsLoading: (value: boolean) =>

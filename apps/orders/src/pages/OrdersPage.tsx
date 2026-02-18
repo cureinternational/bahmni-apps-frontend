@@ -20,7 +20,11 @@ import styles from './styles/OrdersPage.module.scss';
 
 interface OrdersTabContentProps {
   tabLabel: string;
-  onOrderClick: (orderId: string, rows: PatientOrderRow[]) => void;
+  onOrderClick: (
+    orderId: string,
+    rows: PatientOrderRow[],
+    tabLabel: string,
+  ) => void;
 }
 
 const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
@@ -32,7 +36,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 
   const { ordersData } = useOrdersStore();
   const handleOrderClick = (orderId: string) => {
-    onOrderClick(orderId, ordersData[tabLabel]);
+    onOrderClick(orderId, ordersData[tabLabel], tabLabel);
   };
 
   return (
@@ -73,12 +77,18 @@ export const OrdersPage: React.FC = () => {
   } = useOrdersStore();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
+  const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
 
-  const handleOrderClick = (orderId: string, rows: PatientOrderRow[]) => {
+  const handleOrderClick = (
+    orderId: string,
+    rows: PatientOrderRow[],
+    tabLabel: string,
+  ) => {
     for (const patientRow of rows) {
       const order = patientRow.orders.find((o: Order) => o.id === orderId);
       if (order) {
         setSelectedOrder(order);
+        setSelectedTabLabel(tabLabel);
         setIsSliderOpen(true);
         break;
       }
@@ -151,6 +161,7 @@ export const OrdersPage: React.FC = () => {
               order={selectedOrder}
               isOpen={isSliderOpen}
               onClose={handleCloseSlider}
+              tabLabel={selectedTabLabel}
             />
           </div>
         )}
