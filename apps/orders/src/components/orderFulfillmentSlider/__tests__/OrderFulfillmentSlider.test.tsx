@@ -2,8 +2,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { useOrdersConfig } from '../../../hooks/useOrdersConfig';
 import { Order } from '../../../models/orderFulfillment';
-import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 import useOrdersStore from '../../../stores/ordersStore';
+import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
@@ -58,9 +58,7 @@ describe('OrderFulfillmentSlider', () => {
       { id: 'provider-1', name: 'Dr. Smith', uuid: 'uuid-1' },
       { id: 'provider-2', name: 'Dr. Jones', uuid: 'uuid-2' },
     ],
-    'Lab Order': [
-      { id: 'provider-3', name: 'Lab Tech 1', uuid: 'uuid-3' },
-    ],
+    'Lab Order': [{ id: 'provider-3', name: 'Lab Tech 1', uuid: 'uuid-3' }],
   };
 
   beforeEach(() => {
@@ -645,6 +643,7 @@ describe('OrderFulfillmentSlider', () => {
       const statusComboBox = screen.getByTestId('order-status-select');
       const input = statusComboBox.querySelector('input');
 
+      expect(input).toBeInTheDocument();
       if (input) {
         const arrowDownEvent = new KeyboardEvent('keydown', {
           key: 'ArrowDown',
@@ -654,8 +653,6 @@ describe('OrderFulfillmentSlider', () => {
         });
 
         fireEvent.keyDown(input, arrowDownEvent);
-        // Should not prevent default for allowed keys
-        expect(input).toBeInTheDocument();
       }
     });
 
@@ -671,16 +668,15 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       const statusComboBox = screen.getByTestId('order-status-select');
-      const input = statusComboBox.querySelector('input');
+      const input = statusComboBox.querySelector('input') as HTMLInputElement;
 
-      if (input) {
-        const event = {
-          key: 'a',
-          preventDefault: jest.fn(),
-        };
-        fireEvent.keyDown(input, event);
-        expect(event.preventDefault).toHaveBeenCalled();
-      }
+      expect(input).toBeInTheDocument();
+      const event = {
+        key: 'a',
+        preventDefault: jest.fn(),
+      };
+      fireEvent.keyDown(input, event);
+      expect(event.preventDefault).toHaveBeenCalled();
     });
 
     it('allows Enter key in status dropdown', () => {
@@ -695,16 +691,15 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       const statusComboBox = screen.getByTestId('order-status-select');
-      const input = statusComboBox.querySelector('input');
+      const input = statusComboBox.querySelector('input') as HTMLInputElement;
 
-      if (input) {
-        const event = {
-          key: 'Enter',
-          preventDefault: jest.fn(),
-        };
-        fireEvent.keyDown(input, event);
-        expect(event.preventDefault).not.toHaveBeenCalled();
-      }
+      expect(input).toBeInTheDocument();
+      const event = {
+        key: 'Enter',
+        preventDefault: jest.fn(),
+      };
+      fireEvent.keyDown(input, event);
+      expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
     it('allows Escape key in status dropdown', () => {
@@ -719,16 +714,15 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       const statusComboBox = screen.getByTestId('order-status-select');
-      const input = statusComboBox.querySelector('input');
+      const input = statusComboBox.querySelector('input') as HTMLInputElement;
 
-      if (input) {
-        const event = {
-          key: 'Escape',
-          preventDefault: jest.fn(),
-        };
-        fireEvent.keyDown(input, event);
-        expect(event.preventDefault).not.toHaveBeenCalled();
-      }
+      expect(input).toBeInTheDocument();
+      const event = {
+        key: 'Escape',
+        preventDefault: jest.fn(),
+      };
+      fireEvent.keyDown(input, event);
+      expect(event.preventDefault).not.toHaveBeenCalled();
     });
 
     it('allows Tab key in status dropdown', () => {
@@ -743,16 +737,15 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       const statusComboBox = screen.getByTestId('order-status-select');
-      const input = statusComboBox.querySelector('input');
+      const input = statusComboBox.querySelector('input') as HTMLInputElement;
 
-      if (input) {
-        const event = {
-          key: 'Tab',
-          preventDefault: jest.fn(),
-        };
-        fireEvent.keyDown(input, event);
-        expect(event.preventDefault).not.toHaveBeenCalled();
-      }
+      expect(input).toBeInTheDocument();
+      const event = {
+        key: 'Tab',
+        preventDefault: jest.fn(),
+      };
+      fireEvent.keyDown(input, event);
+      expect(event.preventDefault).not.toHaveBeenCalled();
     });
   });
 

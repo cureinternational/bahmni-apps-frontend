@@ -184,8 +184,7 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
           [tabLabel]: providers,
         },
       }));
-    } catch (error) {
-      console.error(`Error fetching providers for tab ${tabLabel}:`, error);
+    } catch {
     }
   },
   setIsLoading: (value: boolean) =>

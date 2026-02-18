@@ -94,7 +94,7 @@ describe('providerService', () => {
 
       it('should fetch providers for all configured tab labels', async () => {
         const tabLabels = Object.keys(TAB_PRACTITIONER_TYPE_MAP);
-        
+
         for (const tabLabel of tabLabels) {
           const mockResponse: ProviderResponse = {
             results: [

@@ -4,10 +4,11 @@ import {
   fetchProvidersByTab,
   Provider,
   OrderResponseItem,
+  getCookieByName,
 } from '@bahmni/services';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import useOrdersStore, { transformOrderData } from '../ordersStore';
 import { OrderTab } from '../../models/ordersConfig';
+import useOrdersStore, { transformOrderData } from '../ordersStore';
 
 jest.mock('@bahmni/services', () => ({
   fetchOrders: jest.fn(),
@@ -24,8 +25,9 @@ const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<
 const mockFetchProvidersByTab = fetchProvidersByTab as jest.MockedFunction<
   typeof fetchProvidersByTab
 >;
-const mockGetCookieByName = require('@bahmni/services')
-  .getCookieByName as jest.Mock;
+const mockGetCookieByName = getCookieByName as jest.MockedFunction<
+  typeof getCookieByName
+>;
 
 describe('ordersStore', () => {
   const mockTabs: OrderTab[] = [
@@ -75,7 +77,9 @@ describe('ordersStore', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockGetCookieByName.mockReturnValue(
-      encodeURIComponent(JSON.stringify({ name: 'Test Location', uuid: 'loc-1' })),
+      encodeURIComponent(
+        JSON.stringify({ name: 'Test Location', uuid: 'loc-1' }),
+      ),
     );
     mockGetCurrentUser.mockResolvedValue({
       uuid: 'user-1',
@@ -153,7 +157,9 @@ describe('ordersStore', () => {
 
       await waitFor(() => {
         expect(mockFetchProvidersByTab).toHaveBeenCalledWith('Radiology Order');
-        expect(result.current.providers['Radiology Order']).toEqual(mockProviders);
+        expect(result.current.providers['Radiology Order']).toEqual(
+          mockProviders,
+        );
       });
     });
 
@@ -167,7 +173,9 @@ describe('ordersStore', () => {
       });
 
       await waitFor(() => {
-        expect(result.current.providers['Radiology Order']).toEqual(mockProviders);
+        expect(result.current.providers['Radiology Order']).toEqual(
+          mockProviders,
+        );
       });
 
       // Second call should not trigger API call
@@ -476,7 +484,9 @@ describe('ordersStore', () => {
 
       expect(result.current.selectedIndex).toBe(1);
       await waitFor(() => {
-        expect(result.current.providers['Radiology Order']).toEqual(mockProviders);
+        expect(result.current.providers['Radiology Order']).toEqual(
+          mockProviders,
+        );
       });
     });
   });

@@ -41,7 +41,7 @@ export const fetchProvidersByTab = async (
     }
 
     return [];
-  } catch (error) {
+  } catch {
     return [];
   }
 };
