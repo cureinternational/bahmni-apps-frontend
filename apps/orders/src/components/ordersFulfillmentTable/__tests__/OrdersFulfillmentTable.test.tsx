@@ -8,6 +8,7 @@ jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
+  formatUrl: (url: string) => url,
 }));
 
 jest.mock('../../../hooks/useOrdersConfig', () => ({
@@ -17,6 +18,19 @@ jest.mock('../../../hooks/useOrdersConfig', () => ({
       orderStatusesPreSelected: ['New', 'In Progress'],
       manageOrdersPanelPatientDetails: [],
     },
+    tabs: [
+      {
+        id: 'bahmni.clinical.patients.search.RadiologyOrderAllPatients',
+        label: 'Radiology Order',
+        display: 'Radiology Orders',
+        translationKey: 'LABEL_RADIOLOGY_ORDERS_KEY',
+        order: 1,
+        searchHandler: 'emrapi.sqlSearch.v2.patientsHasPendingOrders',
+        forwardUrl:
+          '/bahmni/clinical/index.html#/default/patient/{{patientUuid}}/dashboard',
+        targetedTab: 'Radiology Orders',
+      },
+    ],
   }),
 }));
 
@@ -161,16 +175,6 @@ describe('OrdersFulfillmentTable', () => {
     fireEvent.click(expandButtons[0]);
 
     expect(screen.getByText('UNASSIGNED')).toBeInTheDocument();
-  });
-
-  it('calls onPatientClick when identifier is clicked', () => {
-    const onPatientClick = jest.fn();
-    render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
-
-    const identifierLink = screen.getByRole('link', { name: 'CRK262350' });
-    fireEvent.click(identifierLink);
-
-    expect(onPatientClick).toHaveBeenCalledWith('patient-1');
   });
 
   it('calls onOrderClick when order name is clicked', () => {

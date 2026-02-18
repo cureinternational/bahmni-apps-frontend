@@ -36,7 +36,7 @@ const LinkButton: React.FC<LinkButtonProps> = ({
   };
 
   return (
-    <Link onClick={handleClick} className={className}>
+    <Link onClick={handleClick} className={className} role={'link'}>
       {children}
     </Link>
   );
