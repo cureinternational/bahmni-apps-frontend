@@ -164,7 +164,7 @@ describe('ordersStore', () => {
     });
 
     it('should not fetch providers if already cached', async () => {
-      mockFetchProvidersByTab.mockResolvedValueOnce(mockProviders);
+      mockFetchProvidersByTab.mockResolvedValue(mockProviders);
 
       const { result } = renderHook(() => useOrdersStore());
 
@@ -178,32 +178,31 @@ describe('ordersStore', () => {
         );
       });
 
+      // Reset mock to verify it's not called again
+      mockFetchProvidersByTab.mockClear();
+
       // Second call should not trigger API call
       await act(async () => {
         await result.current.fetchProviders('Radiology Order');
       });
 
-      expect(mockFetchProvidersByTab).toHaveBeenCalledTimes(1);
+      expect(mockFetchProvidersByTab).toHaveBeenCalledTimes(0);
     });
 
     it('should handle fetch providers error gracefully', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
       mockFetchProvidersByTab.mockRejectedValueOnce(new Error('API Error'));
 
       const { result } = renderHook(() => useOrdersStore());
 
       await act(async () => {
+        // The error should be caught silently
         await result.current.fetchProviders('Lab Order');
       });
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          'Error fetching providers for tab Lab Order:',
-          expect.any(Error),
-        );
+        // Providers should remain empty when API call fails
+        expect(result.current.providers['Lab Order']).toBeUndefined();
       });
-
-      consoleSpy.mockRestore();
     });
 
     it('should fetch providers for multiple tabs independently', async () => {

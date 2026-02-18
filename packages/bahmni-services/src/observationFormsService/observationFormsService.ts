@@ -145,7 +145,7 @@ export const fetchFormMetadata = async (
           currentLocale,
         );
       }
-    } catch (error) {
+    } catch {
       // Silently fail with empty translations
     }
   }

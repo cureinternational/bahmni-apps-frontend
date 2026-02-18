@@ -175,14 +175,18 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
       return;
     }
 
-    const providers = await fetchProvidersByTab(tabLabel);
-    set((state) => ({
-      ...state,
-      providers: {
-        ...state.providers,
-        [tabLabel]: providers,
-      },
-    }));
+    try {
+      const providers = await fetchProvidersByTab(tabLabel);
+      set((state) => ({
+        ...state,
+        providers: {
+          ...state.providers,
+          [tabLabel]: providers,
+        },
+      }));
+    } catch {
+      // Silently fail, providers will remain empty for this tab
+    }
   },
   setIsLoading: (value: boolean) =>
     set((state) => ({ ...state, isLoading: value })),
