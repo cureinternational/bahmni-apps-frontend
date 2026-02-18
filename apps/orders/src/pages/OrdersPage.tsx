@@ -41,60 +41,53 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
     setSearchInput(event.target.value);
   };
 
-  // Filter rows based on search input (min 3 characters)
   const filteredRows = useMemo(() => {
     const rows = ordersData[tabLabel] || [];
 
-    // Return all rows if search is empty or less than 3 characters
     if (!searchInput || searchInput.trim().length < 3) {
       return rows;
     }
 
     const searchTerm = searchInput.trim().toLowerCase();
 
-    return rows
-      .map((row) => {
-        // Search by patient name or identifier
-        const matchesPatientName = row.patientName
-          ?.toLowerCase()
-          .includes(searchTerm);
-        const matchesIdentifier = row.identifier
-          ?.toLowerCase()
-          .includes(searchTerm);
+    return rows.reduce<PatientOrderRow[]>((acc, row) => {
+      const matchesPatientName = row.patientName
+        ?.toLowerCase()
+        .includes(searchTerm);
+      const matchesIdentifier = row.identifier
+        ?.toLowerCase()
+        .includes(searchTerm);
 
-        // If patient name or identifier matches, return the whole row
-        if (matchesPatientName || matchesIdentifier) {
-          return row;
-        }
+      if (matchesPatientName || matchesIdentifier) {
+        acc.push(row);
+        return acc;
+      }
 
-        // Filter orders by owner or provider name
-        const matchingOrders = row.orders.filter((order) => {
-          const matchesOwner =
-            order.owner?.toLowerCase().includes(searchTerm) ?? false;
-          const matchesProvider =
-            order.provider?.toLowerCase().includes(searchTerm) ?? false;
-          return matchesOwner || matchesProvider;
-        });
+      const matchingOrders = row.orders.filter((order) => {
+        const matchesOwner =
+          order.owner?.toLowerCase().includes(searchTerm) ?? false;
+        const matchesProvider =
+          order.provider?.toLowerCase().includes(searchTerm) ?? false;
+        return matchesOwner || matchesProvider;
+      });
 
-        // If no orders match, exclude this patient
-        if (matchingOrders.length === 0) {
-          return null;
-        }
+      if (matchingOrders.length === 0) {
+        return acc;
+      }
 
-        // Calculate urgent count for filtered orders
-        const urgentCount = matchingOrders.filter(
-          (order) => order.priority === ORDER_PRIORITY.STAT,
-        ).length;
+      const urgentCount = matchingOrders.filter(
+        (order) => order.priority === ORDER_PRIORITY.STAT,
+      ).length;
 
-        // Return patient with only matching orders
-        return {
-          ...row,
-          orders: matchingOrders,
-          totalOrdersCount: matchingOrders.length,
-          urgentCount,
-        };
-      })
-      .filter((row) => row !== null) as PatientOrderRow[];
+      acc.push({
+        ...row,
+        orders: matchingOrders,
+        totalOrdersCount: matchingOrders.length,
+        urgentCount,
+      });
+
+      return acc;
+    }, []);
   }, [ordersData, tabLabel, searchInput]);
 
   return (

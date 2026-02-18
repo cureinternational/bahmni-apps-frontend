@@ -8,7 +8,6 @@ import { OrdersConfigProvider } from '../../providers/OrdersConfigProvider';
 import useOrdersStore from '../../stores/ordersStore';
 import { OrdersPage } from '../OrdersPage';
 
-// Mock the services
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
   getOrdersConfig: jest.fn(),
@@ -28,13 +27,11 @@ jest.mock('@bahmni/services', () => ({
   __esModule: true,
 }));
 
-// Mock OrdersHeader
 jest.mock('../../components/ordersHeader/OrdersHeader', () => ({
   __esModule: true,
   OrdersHeader: () => <div data-testid="orders-header">Orders Header</div>,
 }));
 
-// Mock useOrdersFulfillment
 jest.mock('../../hooks/useOrdersFulfillment', () => ({
   useOrdersFulfillment: () => ({
     rows: [],
@@ -49,12 +46,15 @@ jest.mock('../../hooks/useOrdersFulfillment', () => ({
   }),
 }));
 
-// Mock OrdersFulfillmentTable - renders patient names so filter assertions can be made
 jest.mock('../../components/ordersFulfillmentTable', () => ({
   OrdersFulfillmentTable: ({ rows }: { rows: any[] }) => (
     <div data-testid="orders-fulfillment-table">
       {rows.map((row: any) => (
-        <div key={row.id} data-testid="patient-row">
+        <div
+          key={row.id}
+          data-testid="patient-row"
+          data-urgent-count={row.urgentCount}
+        >
           {row.patientName}
         </div>
       ))}
@@ -69,7 +69,6 @@ const mockedUseTranslation = useTranslation as jest.MockedFunction<
 const { getOrdersConfig, getOrdersTableConfig } =
   jest.requireMock('@bahmni/services');
 
-// Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation((query) => ({
@@ -117,7 +116,6 @@ describe('OrdersPage Component', () => {
         </OrdersConfigProvider>,
       );
 
-      // Check for Carbon Design System loading overlay
       expect(
         container.querySelector('.cds--loading-overlay'),
       ).toBeInTheDocument();
@@ -271,11 +269,9 @@ describe('OrdersPage Component', () => {
 
       const searchInput = screen.getByRole('searchbox');
 
-      // Type 2 characters - should not filter
       await user.type(searchInput, 'Da');
       expect(searchInput).toHaveValue('Da');
 
-      // Type 3rd character - should trigger filter
       await user.type(searchInput, 'v');
       expect(searchInput).toHaveValue('Dav');
     });
@@ -299,7 +295,6 @@ describe('OrdersPage Component', () => {
       await user.type(searchInput, 'David');
       expect(searchInput).toHaveValue('David');
 
-      // Clear the input
       await user.clear(searchInput);
       expect(searchInput).toHaveValue('');
     });
@@ -321,16 +316,13 @@ describe('OrdersPage Component', () => {
 
       const searchInput = screen.getByRole('searchbox');
 
-      // Type in lowercase - should still match "David Kamau"
       await user.type(searchInput, 'david');
       expect(searchInput).toHaveValue('david');
 
-      // Type in uppercase
       await user.clear(searchInput);
       await user.type(searchInput, 'DAVID');
       expect(searchInput).toHaveValue('DAVID');
 
-      // Type in mixed case
       await user.clear(searchInput);
       await user.type(searchInput, 'DaViD');
       expect(searchInput).toHaveValue('DaViD');
@@ -353,16 +345,12 @@ describe('OrdersPage Component', () => {
 
       const searchInput = screen.getByRole('searchbox');
 
-      // Type with leading/trailing spaces
       await user.type(searchInput, '  David  ');
       expect(searchInput).toHaveValue('  David  ');
-      // The filter logic should trim this internally
     });
   });
 
   describe('Search Filtering - Filtered Results', () => {
-    // Inject rehabOrdersMockData into the Zustand store under the tab label
-    // used by minimalOrdersConfig ('Radiology Order').
     beforeEach(() => {
       getOrdersConfig.mockResolvedValue(configMocks.minimalOrdersConfig);
       mockedUseTranslation.mockReturnValue({
@@ -408,7 +396,6 @@ describe('OrdersPage Component', () => {
       renderPage();
       await waitForPage();
 
-      // CRK266785 is Samuel Mensah's identifier
       await user.type(screen.getByRole('searchbox'), 'CRK266785');
 
       await waitFor(() => {
@@ -423,7 +410,6 @@ describe('OrdersPage Component', () => {
       renderPage();
       await waitForPage();
 
-      // Sarah Kimani is the provider for all of Samuel Mensah's orders
       await user.type(screen.getByRole('searchbox'), 'Sarah Kimani');
 
       await waitFor(() => {
@@ -438,13 +424,34 @@ describe('OrdersPage Component', () => {
       renderPage();
       await waitForPage();
 
-      // Ted Okatch is the owner for David Kamau's orders (order-1-2 and order-1-3)
       await user.type(screen.getByRole('searchbox'), 'Ted Okatch');
 
       await waitFor(() => {
         expect(screen.getByText('David Kamau')).toBeInTheDocument();
         expect(screen.queryByText('Samuel Mensah')).not.toBeInTheDocument();
         expect(screen.queryByText('John Doe')).not.toBeInTheDocument();
+      });
+    });
+
+    test('recalculates urgentCount for orders matched by provider name', async () => {
+      // David Kamau has 3 orders all by provider 'Mike Ronoh':
+      //   order-1-1: STAT priority
+      //   order-1-2: ROUTINE priority
+      //   order-1-3: ROUTINE priority
+      // Searching 'Mike Ronoh' matches by provider (not patient name/id),
+      // so filteredRows recalculates urgentCount = 1 (only the STAT order).
+      const user = userEvent.setup();
+      renderPage();
+      await waitForPage();
+
+      await user.type(screen.getByRole('searchbox'), 'Mike Ronoh');
+
+      await waitFor(() => {
+        const davidRow = screen
+          .getByText('David Kamau')
+          .closest('[data-testid="patient-row"]');
+        expect(davidRow).toBeInTheDocument();
+        expect(davidRow).toHaveAttribute('data-urgent-count', '1');
       });
     });
   });
