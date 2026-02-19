@@ -20,9 +20,21 @@ export const transformOrderData = (
 ): PatientOrderRow[] => {
   return ordersInfo.map((order) => {
     const { orders: ordersData = '' } = order;
-    const orders: OrderItem[] = ordersData
-      ? JSON.parse(ordersData.replace(/\n/g, '\\n'))
-      : [];
+    let orders: OrderItem[] = [];
+
+    if (ordersData) {
+      try {
+        orders = JSON.parse(ordersData);
+      } catch {
+        try {
+          const sanitized = ordersData.replace(/\n/g, '\\n');
+          orders = JSON.parse(sanitized);
+        } catch {
+          orders = [];
+        }
+      }
+    }
+
     let urgentOrders = 0;
     const { birthdate } = order;
     const age = calculateAge(moment(birthdate).format('YYYY-MM-DD'));
@@ -34,12 +46,9 @@ export const transformOrderData = (
       return {
         id: item.orderUuid,
         orderName: item.orderName,
-        // orderType: 'Rehab Order',
         priority: item.priority,
-        // status,
         provider: item.providerName,
         dateTime: moment(item.dateTime).format('DD MMM YY hh:mm A'),
-        // owner,
         providerComments: item.providerComments,
         orderType: '',
         status: '',

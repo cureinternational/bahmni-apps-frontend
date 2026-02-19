@@ -39,7 +39,6 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     if (isOpen && tabLabel) {
       fetchProviders(tabLabel);
     } else if (!isOpen) {
-      // Reset form state when slider is closed
       setNotes('');
       setStatus('');
       setOwner('');
@@ -78,7 +77,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     >
       <div className={styles.sliderHeader}>
         <div className={styles.headerTop}>
-          <div className={styles.sliderTitle}>{order.orderName}</div>
+          <div className={styles.sliderTitle}>{t('MANAGE_ORDER')}</div>
           <button
             className={styles.closeButton}
             onClick={onClose}
@@ -88,6 +87,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
             <Close size={20} />
           </button>
         </div>
+        <div className={styles.sliderTitle}>{order.orderName}</div>
       </div>
       <div className={styles.sliderContent}>
         {order.providerComments && (
