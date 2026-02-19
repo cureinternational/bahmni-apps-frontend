@@ -98,10 +98,14 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
   setCurrentLocation: () => {
     const cookieValue = getCookieByName(USER_LOCATION_COOKIE);
     const decodedCookie = decodeURIComponent(cookieValue);
-    set((state) => ({
-      ...state,
-      currentLocation: JSON.parse(decodedCookie),
-    }));
+    try {
+      set((state) => ({
+        ...state,
+        currentLocation: JSON.parse(decodedCookie),
+      }));
+    } catch {
+      // Silently fail if cookie is invalid, keep current location
+    }
   },
   fetchOrdersForTab: async (tabIndex: number) => {
     const { tabs, currentLocation, currentUser, setIsLoading } = get();

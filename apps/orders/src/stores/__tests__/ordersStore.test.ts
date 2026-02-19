@@ -76,6 +76,16 @@ describe('ordersStore', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    useOrdersStore.setState({
+      selectedIndex: 0,
+      tabs: [],
+      tabCounts: {},
+      isLoading: false,
+      currentUser: {} as User,
+      currentLocation: { name: '', uuid: '' },
+      ordersData: {},
+      providers: {},
+    });
     mockGetCookieByName.mockReturnValue(
       encodeURIComponent(
         JSON.stringify({ name: 'Test Location', uuid: 'loc-1' }),

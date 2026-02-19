@@ -30,7 +30,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
 
   const availableStatuses: OrderStatus[] =
-    ordersTableConfig?.orderStatusesAvailable as OrderStatus[];
+    (ordersTableConfig?.orderStatusesAvailable as OrderStatus[]) ?? [];
 
   const patientDetailFields =
     ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];
@@ -38,6 +38,11 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   useEffect(() => {
     if (isOpen && tabLabel) {
       fetchProviders(tabLabel);
+    } else if (!isOpen) {
+      // Reset form state when slider is closed
+      setNotes('');
+      setStatus('');
+      setOwner('');
     }
   }, [isOpen, tabLabel, fetchProviders]);
 
@@ -161,7 +166,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   'Escape',
                   'Tab',
                 ];
-                if (!allowedKeys.includes(e.key)) {
+                if (!allowedKeys.includes(e.key) && e.key.length === 1) {
                   e.preventDefault();
                 }
               }}
