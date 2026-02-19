@@ -20,9 +20,9 @@ jest.mock('@bahmni/design-system', () => ({
     className: string;
     role: string;
   }) => (
-    <a onClick={onClick} className={className} role={role}>
+    <button onClick={onClick} className={className} role={role}>
       {children}
-    </a>
+    </button>
   ),
 }));
 
