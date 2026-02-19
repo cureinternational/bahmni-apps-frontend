@@ -18,7 +18,9 @@ export const transformOrderData = (
 ): PatientOrderRow[] => {
   return ordersInfo.map((order) => {
     const { orders: ordersData = '' } = order;
-    const orders: OrderItem[] = JSON.parse(ordersData.replace(/\n/g, '\\n'));
+    const orders: OrderItem[] = ordersData
+      ? JSON.parse(ordersData.replace(/\n/g, '\\n'))
+      : [];
     let urgentOrders = 0;
     const { birthdate } = order;
     const age = calculateAge(moment(birthdate).format('YYYY-MM-DD'));
