@@ -1,447 +1,55 @@
 import {
+  calculateAge,
   fetchOrders,
-  getCurrentUser,
-  fetchProvidersByTab,
-  Provider,
-  OrderResponseItem,
   getCookieByName,
+  getCurrentUser,
+  OrderResponseItem,
+  User,
 } from '@bahmni/services';
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { OrderTab } from '../../models/ordersConfig';
+import { renderHook, act } from '@testing-library/react';
+import { ORDER_PRIORITY, OrderTab } from '../../models/ordersConfig';
 import useOrdersStore, { transformOrderData } from '../ordersStore';
 
 jest.mock('@bahmni/services', () => ({
+  calculateAge: jest.fn(),
   fetchOrders: jest.fn(),
-  getCurrentUser: jest.fn(),
   getCookieByName: jest.fn(),
-  fetchProvidersByTab: jest.fn(),
-  calculateAge: jest.fn(() => ({ years: 25, months: 3, days: 15 })),
+  getCurrentUser: jest.fn(),
 }));
 
-const mockFetchOrders = fetchOrders as jest.MockedFunction<typeof fetchOrders>;
-const mockGetCurrentUser = getCurrentUser as jest.MockedFunction<
-  typeof getCurrentUser
->;
-const mockFetchProvidersByTab = fetchProvidersByTab as jest.MockedFunction<
-  typeof fetchProvidersByTab
->;
-const mockGetCookieByName = getCookieByName as jest.MockedFunction<
-  typeof getCookieByName
->;
+jest.mock('moment', () => {
+  const actualMoment = jest.requireActual('moment');
+  const mockMoment: any = (date?: any) => actualMoment(date);
+  Object.assign(mockMoment, actualMoment);
+  return mockMoment;
+});
 
 describe('ordersStore', () => {
-  const mockTabs: OrderTab[] = [
-    {
-      id: 'radiology',
-      label: 'Radiology Order',
-      display: 'Radiology Orders',
-      translationKey: 'RADIOLOGY_ORDERS',
-      order: 1,
-      searchHandler: 'emrapi.sqlSearch.patientsHasPendingOrders',
-    },
-    {
-      id: 'lab',
-      label: 'Lab Order',
-      display: 'Laboratory Orders',
-      translationKey: 'LAB_ORDERS',
-      order: 2,
-      searchHandler: 'emrapi.sqlSearch.patientsHasPendingLabOrders',
-    },
-  ];
-
-  const mockOrderResponse: OrderResponseItem[] = [
-    {
-      uuid: 'patient-uuid-1',
-      identifier: 'PAT001',
-      name: 'John Doe',
-      birthdate: '1998-05-15',
-      gender: 'Male',
-      orders: JSON.stringify([
-        {
-          orderUuid: 'order-1',
-          orderName: 'X-Ray Chest',
-          priority: 'STAT',
-          providerName: 'Dr. Smith',
-          dateTime: new Date('2026-02-10').getTime(),
-          providerComments: 'Urgent',
-        },
-      ]),
-    },
-  ];
-
-  const mockProviders: Provider[] = [
-    { id: 'provider-1', name: 'Dr. Smith', uuid: 'uuid-1' },
-    { id: 'provider-2', name: 'Dr. Jones', uuid: 'uuid-2' },
-  ];
-
   beforeEach(() => {
     jest.clearAllMocks();
-    useOrdersStore.setState({
-      selectedIndex: 0,
-      tabs: [],
-      tabCounts: {},
-      isLoading: false,
-      currentUser: {} as User,
-      currentLocation: { name: '', uuid: '' },
-      ordersData: {},
-      providers: {},
-    });
-    mockGetCookieByName.mockReturnValue(
-      encodeURIComponent(
-        JSON.stringify({ name: 'Test Location', uuid: 'loc-1' }),
-      ),
-    );
-    mockGetCurrentUser.mockResolvedValue({
-      uuid: 'user-1',
-      username: 'testuser',
-      display: 'Test User',
-      person: {
-        uuid: 'person-1',
-        display: 'Test User',
-      },
-    } as any);
-  });
-
-  describe('transformOrderData', () => {
-    it('should transform order response correctly', () => {
-      const result = transformOrderData(mockOrderResponse);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].identifier).toBe('PAT001');
-      expect(result[0].patientName).toBe('John Doe');
-      expect(result[0].orders).toHaveLength(1);
-      expect(result[0].orders[0].orderName).toBe('X-Ray Chest');
-    });
-
-    it('should calculate urgent count correctly', () => {
-      const result = transformOrderData(mockOrderResponse);
-
-      expect(result[0].urgentCount).toBe(1);
-    });
-
-    it('should format patient age correctly', () => {
-      const result = transformOrderData(mockOrderResponse);
-
-      expect(result[0].orders[0].patient.age).toBe('25 years 3 months 15 days');
-    });
-
-    it('should handle empty orders array', () => {
-      const emptyResponse: OrderResponseItem[] = [];
-      const result = transformOrderData(emptyResponse);
-
-      expect(result).toEqual([]);
-    });
-
-    it('should handle orders with escaped newlines', () => {
-      const responseWithNewlines: OrderResponseItem[] = [
-        {
-          ...mockOrderResponse[0],
-          orders: JSON.stringify([
-            {
-              orderUuid: 'order-1',
-              orderName: 'Test\nOrder',
-              priority: 'ROUTINE',
-              providerName: 'Dr. Smith',
-              dateTime: new Date().getTime(),
-              providerComments: 'Line1\nLine2',
-            },
-          ]).replace(/\\n/g, '\n'),
-        },
-      ];
-
-      const result = transformOrderData(responseWithNewlines);
-
-      expect(result).toHaveLength(1);
+    const { result } = renderHook(() => useOrdersStore());
+    act(() => {
+      result.current.setSelectedIndex(0);
+      result.current.setIsLoading(false);
     });
   });
 
-  describe('fetchProviders', () => {
-    it('should fetch providers for a tab', async () => {
-      mockFetchProvidersByTab.mockResolvedValueOnce(mockProviders);
-
+  describe('Initial State', () => {
+    it('should have correct initial values', () => {
       const { result } = renderHook(() => useOrdersStore());
 
-      await act(async () => {
-        await result.current.fetchProviders('Radiology Order');
-      });
-
-      await waitFor(() => {
-        expect(mockFetchProvidersByTab).toHaveBeenCalledWith('Radiology Order');
-        expect(result.current.providers['Radiology Order']).toEqual(
-          mockProviders,
-        );
-      });
-    });
-
-    it('should not fetch providers if already cached', async () => {
-      mockFetchProvidersByTab.mockResolvedValue(mockProviders);
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      await act(async () => {
-        await result.current.fetchProviders('Radiology Order');
-      });
-
-      await waitFor(() => {
-        expect(result.current.providers['Radiology Order']).toEqual(
-          mockProviders,
-        );
-      });
-
-      // Reset mock to verify it's not called again
-      mockFetchProvidersByTab.mockClear();
-
-      // Second call should not trigger API call
-      await act(async () => {
-        await result.current.fetchProviders('Radiology Order');
-      });
-
-      expect(mockFetchProvidersByTab).toHaveBeenCalledTimes(0);
-    });
-
-    it('should handle fetch providers error gracefully', async () => {
-      mockFetchProvidersByTab.mockRejectedValueOnce(new Error('API Error'));
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      await act(async () => {
-        // The error should be caught silently
-        await result.current.fetchProviders('Lab Order');
-      });
-
-      await waitFor(() => {
-        // Providers should remain empty when API call fails
-        expect(result.current.providers['Lab Order']).toBeUndefined();
-      });
-    });
-
-    it('should fetch providers for multiple tabs independently', async () => {
-      const radiologyProviders = [
-        { id: 'rad-1', name: 'Radiologist 1', uuid: 'rad-uuid-1' },
-      ];
-      const labProviders = [
-        { id: 'lab-1', name: 'Lab Tech 1', uuid: 'lab-uuid-1' },
-      ];
-
-      mockFetchProvidersByTab
-        .mockResolvedValueOnce(radiologyProviders)
-        .mockResolvedValueOnce(labProviders);
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      await act(async () => {
-        await result.current.fetchProviders('Radiology Order');
-        await result.current.fetchProviders('Lab Order');
-      });
-
-      await waitFor(() => {
-        expect(result.current.providers['Radiology Order']).toEqual(
-          radiologyProviders,
-        );
-        expect(result.current.providers['Lab Order']).toEqual(labProviders);
-      });
-    });
-
-    it('should handle empty providers response', async () => {
-      mockFetchProvidersByTab.mockResolvedValueOnce([]);
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      await act(async () => {
-        await result.current.fetchProviders('Rehab Order');
-      });
-
-      await waitFor(() => {
-        expect(result.current.providers['Rehab Order']).toEqual([]);
-      });
-    });
-  });
-
-  describe('fetchAllPendingOrders', () => {
-    beforeEach(() => {
-      mockFetchOrders.mockResolvedValue(mockOrderResponse);
-    });
-
-    it('should fetch orders for all tabs', async () => {
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      await act(async () => {
-        await result.current.fetchCurrentUser();
-      });
-
-      await act(async () => {
-        await result.current.fetchAllPendingOrders(mockTabs);
-      });
-
-      await waitFor(() => {
-        expect(mockFetchOrders).toHaveBeenCalledTimes(2);
-        expect(result.current.tabs).toEqual(mockTabs);
-      });
-    });
-
-    it('should set tab counts correctly', async () => {
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      await act(async () => {
-        await result.current.fetchCurrentUser();
-      });
-
-      await act(async () => {
-        await result.current.fetchAllPendingOrders(mockTabs);
-      });
-
-      await waitFor(() => {
-        expect(result.current.tabCounts['Radiology Order']).toBe(1);
-        expect(result.current.tabCounts['Lab Order']).toBe(1);
-      });
-    });
-
-    it('should handle failed order fetches', async () => {
-      mockFetchOrders
-        .mockResolvedValueOnce(mockOrderResponse)
-        .mockRejectedValueOnce(new Error('API Error'));
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      await act(async () => {
-        await result.current.fetchCurrentUser();
-      });
-
-      await act(async () => {
-        await result.current.fetchAllPendingOrders(mockTabs);
-      });
-
-      await waitFor(() => {
-        expect(result.current.tabCounts['Radiology Order']).toBe(1);
-        expect(result.current.tabCounts['Lab Order']).toBe(0);
-        expect(result.current.ordersData['Lab Order']).toEqual([]);
-      });
-    });
-
-    it('should not fetch when location is missing', async () => {
-      mockGetCookieByName.mockReturnValue('');
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      await act(async () => {
-        await result.current.fetchAllPendingOrders(mockTabs);
-      });
-
-      expect(mockFetchOrders).not.toHaveBeenCalled();
-    });
-
-    it('should not fetch when user is missing', async () => {
-      mockGetCurrentUser.mockResolvedValue(null as any);
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      await act(async () => {
-        await result.current.fetchCurrentUser();
-      });
-
-      await act(async () => {
-        await result.current.fetchAllPendingOrders(mockTabs);
-      });
-
-      expect(mockFetchOrders).not.toHaveBeenCalled();
-    });
-
-    it('should not fetch when tabs array is empty', async () => {
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      await act(async () => {
-        await result.current.fetchCurrentUser();
-      });
-
-      await act(async () => {
-        await result.current.fetchAllPendingOrders([]);
-      });
-
-      expect(mockFetchOrders).not.toHaveBeenCalled();
-    });
-
-    it('should set isLoading correctly', async () => {
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      await act(async () => {
-        await result.current.fetchCurrentUser();
-      });
-
+      expect(result.current.selectedIndex).toBe(0);
+      expect(result.current.tabs).toEqual([]);
+      expect(result.current.tabCounts).toEqual({});
       expect(result.current.isLoading).toBe(false);
-
-      const fetchPromise = act(async () => {
-        await result.current.fetchAllPendingOrders(mockTabs);
-      });
-
-      await waitFor(() => {
-        expect(result.current.isLoading).toBe(false);
-      });
-
-      await fetchPromise;
+      expect(result.current.currentUser).toEqual({});
+      expect(result.current.currentLocation).toEqual({ name: '', uuid: '' });
+      expect(result.current.ordersData).toEqual([]);
     });
   });
 
-  describe('fetchOrdersForTab', () => {
-    it('should fetch orders for specific tab', async () => {
-      mockFetchOrders.mockResolvedValueOnce(mockOrderResponse);
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      await act(async () => {
-        await result.current.fetchCurrentUser();
-        await result.current.fetchAllPendingOrders(mockTabs);
-      });
-
-      await act(async () => {
-        await result.current.fetchOrdersForTab(0);
-      });
-
-      await waitFor(() => {
-        expect(result.current.ordersData['Radiology Order']).toBeDefined();
-      });
-    });
-
-    it('should not fetch when tab index is invalid', async () => {
-      const { result } = renderHook(() => useOrdersStore());
-
-      await act(async () => {
-        await result.current.fetchOrdersForTab(99);
-      });
-
-      expect(mockFetchOrders).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('store state management', () => {
-    it('should set selected index', () => {
+  describe('setSelectedIndex', () => {
+    it('should update selectedIndex', () => {
       const { result } = renderHook(() => useOrdersStore());
 
       act(() => {
@@ -450,8 +58,10 @@ describe('ordersStore', () => {
 
       expect(result.current.selectedIndex).toBe(2);
     });
+  });
 
-    it('should set isLoading', () => {
+  describe('setIsLoading', () => {
+    it('should update isLoading state', () => {
       const { result } = renderHook(() => useOrdersStore());
 
       act(() => {
@@ -466,78 +76,16 @@ describe('ordersStore', () => {
 
       expect(result.current.isLoading).toBe(false);
     });
-
-    it('should initialize with correct default values', () => {
-      const { result } = renderHook(() => useOrdersStore());
-
-      expect(result.current.selectedIndex).toBe(0);
-      expect(result.current.tabs).toEqual([]);
-      expect(result.current.tabCounts).toEqual({});
-      expect(result.current.isLoading).toBe(false);
-      expect(result.current.ordersData).toEqual({});
-      expect(result.current.providers).toEqual({});
-    });
-
-    it('should maintain state across multiple operations', async () => {
-      mockFetchProvidersByTab.mockResolvedValueOnce(mockProviders);
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setSelectedIndex(1);
-      });
-
-      await act(async () => {
-        await result.current.fetchProviders('Radiology Order');
-      });
-
-      expect(result.current.selectedIndex).toBe(1);
-      await waitFor(() => {
-        expect(result.current.providers['Radiology Order']).toEqual(
-          mockProviders,
-        );
-      });
-    });
-  });
-
-  describe('setCurrentLocation', () => {
-    it('should parse location from cookie', () => {
-      const mockLocation = { name: 'Main Hospital', uuid: 'loc-123' };
-      mockGetCookieByName.mockReturnValue(
-        encodeURIComponent(JSON.stringify(mockLocation)),
-      );
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      expect(result.current.currentLocation).toEqual(mockLocation);
-    });
-
-    it('should handle empty cookie gracefully', () => {
-      mockGetCookieByName.mockReturnValue('');
-
-      const { result } = renderHook(() => useOrdersStore());
-
-      act(() => {
-        result.current.setCurrentLocation();
-      });
-
-      // Should not throw error
-      expect(result.current.currentLocation).toBeDefined();
-    });
   });
 
   describe('fetchCurrentUser', () => {
     it('should fetch and set current user', async () => {
-      const mockUser = {
+      const mockUser: User = {
         uuid: 'user-123',
-        username: 'testuser',
-        display: 'Test User',
+        username: 'johndoe',
       };
-      mockGetCurrentUser.mockResolvedValueOnce(mockUser as any);
+
+      (getCurrentUser as jest.Mock).mockResolvedValue(mockUser);
 
       const { result } = renderHook(() => useOrdersStore());
 
@@ -545,20 +93,523 @@ describe('ordersStore', () => {
         await result.current.fetchCurrentUser();
       });
 
+      expect(getCurrentUser).toHaveBeenCalledTimes(1);
       expect(result.current.currentUser).toEqual(mockUser);
     });
 
-    it('should handle null user response', async () => {
-      mockGetCurrentUser.mockResolvedValueOnce(null as any);
+    it('should not update state if getCurrentUser returns null', async () => {
+      (getCurrentUser as jest.Mock).mockResolvedValue(null);
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: {} as User,
+        });
+      });
 
       const { result } = renderHook(() => useOrdersStore());
+      const initialUser = result.current.currentUser;
 
       await act(async () => {
         await result.current.fetchCurrentUser();
       });
 
-      // Should not update state when user is null
-      expect(result.current.currentUser).toEqual({});
+      expect(result.current.currentUser).toEqual(initialUser);
+    });
+  });
+
+  describe('setCurrentLocation', () => {
+    it('should decode cookie and set current location', () => {
+      const mockLocation = { name: 'Ward A', uuid: 'location-123' };
+      const encodedLocation = encodeURIComponent(JSON.stringify(mockLocation));
+
+      (getCookieByName as jest.Mock).mockReturnValue(encodedLocation);
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        result.current.setCurrentLocation();
+      });
+
+      expect(getCookieByName).toHaveBeenCalledWith('bahmni.user.location');
+      expect(result.current.currentLocation).toEqual(mockLocation);
+    });
+  });
+
+  describe('fetchOrdersForTab', () => {
+    const mockTabs: OrderTab[] = [
+      {
+        id: 'tab1',
+        label: 'Pending',
+        display: 'Pending Orders',
+        searchHandler: 'pending',
+        translationKey: 'PENDING',
+        order: 1,
+        forwardUrl: '/url2',
+      },
+      {
+        id: 'tab2',
+        label: 'InProgress',
+        display: 'In Progress Orders',
+        searchHandler: 'inprogress',
+        translationKey: 'IN_PROGRESS',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+    ];
+
+    const mockOrdersResponse: OrderResponseItem[] = [
+      {
+        uuid: 'patient-123',
+        identifier: 'PAT001',
+        name: 'John Doe',
+        gender: 'Male',
+        birthdate: new Date('1990-01-15').getTime(),
+        orders: JSON.stringify([
+          {
+            orderUuid: 'order-1',
+            orderName: 'Blood Test',
+            priority: ORDER_PRIORITY.ROUTINE,
+            providerName: 'Dr. Smith',
+            dateTime: '2025-02-15T10:30:00',
+            providerComments: 'Fasting required',
+          },
+        ]),
+      },
+    ];
+
+    beforeEach(() => {
+      (calculateAge as jest.Mock).mockReturnValue({
+        years: 35,
+        months: 1,
+        days: 2,
+      });
+      (fetchOrders as jest.Mock).mockResolvedValue(mockOrdersResponse);
+    });
+
+    it('should fetch orders for a specific tab', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          tabs: mockTabs,
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchOrdersForTab(0);
+      });
+
+      expect(fetchOrders).toHaveBeenCalledWith({
+        locationUuid: 'location-123',
+        providerUuid: 'user-123',
+        q: 'pending',
+      });
+
+      expect(result.current.ordersData).toHaveLength(1);
+      expect(result.current.ordersData[0].patientName).toBe('John Doe');
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should not fetch if currentUser is not set', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          tabs: mockTabs,
+          currentUser: {} as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchOrdersForTab(0);
+      });
+
+      expect(fetchOrders).not.toHaveBeenCalled();
+    });
+
+    it('should not fetch if tab index is invalid', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          tabs: mockTabs,
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchOrdersForTab(999);
+      });
+
+      expect(fetchOrders).not.toHaveBeenCalled();
+    });
+
+    it('should set loading state during fetch', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          tabs: mockTabs,
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      const loadingStateCaptures: boolean[] = [];
+
+      (fetchOrders as jest.Mock).mockImplementation(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        loadingStateCaptures.push(useOrdersStore.getState().isLoading);
+        return mockOrdersResponse;
+      });
+
+      await act(async () => {
+        await result.current.fetchOrdersForTab(0);
+      });
+
+      expect(loadingStateCaptures).toContain(true);
+      expect(result.current.isLoading).toBe(false);
+    });
+  });
+
+  describe('fetchAllPendingOrders', () => {
+    const mockTabs: OrderTab[] = [
+      {
+        id: 'tab1',
+        label: 'Pending',
+        display: 'Pending Orders',
+        searchHandler: 'pending',
+        translationKey: 'PENDING',
+        order: 1,
+        forwardUrl: '/url1',
+      },
+      {
+        id: 'tab2',
+        label: 'InProgress',
+        display: 'In Progress Orders',
+        searchHandler: 'inprogress',
+        translationKey: 'IN_PROGRESS',
+        order: 2,
+        forwardUrl: '/url2',
+      },
+    ];
+
+    const mockOrdersResponse: OrderResponseItem[] = [
+      {
+        uuid: 'patient-123',
+        identifier: 'PAT001',
+        name: 'John Doe',
+        gender: 'Male',
+        birthdate: new Date('1990-01-15').getTime(),
+        orders: JSON.stringify([
+          {
+            orderUuid: 'order-1',
+            orderName: 'Blood Test',
+            priority: ORDER_PRIORITY.ROUTINE,
+            providerName: 'Dr. Smith',
+            dateTime: '2025-02-15T10:30:00',
+            providerComments: 'Fasting required',
+          },
+        ]),
+      },
+    ];
+
+    beforeEach(() => {
+      (calculateAge as jest.Mock).mockReturnValue({
+        years: 35,
+        months: 1,
+        days: 2,
+      });
+    });
+
+    it('should fetch orders for all tabs and update tab counts', async () => {
+      (fetchOrders as jest.Mock)
+        .mockResolvedValueOnce(mockOrdersResponse)
+        .mockResolvedValueOnce([mockOrdersResponse[0], mockOrdersResponse[0]]);
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(mockTabs);
+      });
+
+      expect(fetchOrders).toHaveBeenCalledTimes(2);
+      expect(result.current.tabCounts).toEqual({
+        Pending: 1,
+        InProgress: 2,
+      });
+      expect(result.current.tabs).toEqual(mockTabs);
+      expect(result.current.ordersData).toHaveLength(1);
+    });
+
+    it('should handle failed requests gracefully', async () => {
+      (fetchOrders as jest.Mock)
+        .mockResolvedValueOnce(mockOrdersResponse)
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(mockTabs);
+      });
+
+      expect(result.current.tabCounts).toEqual({
+        Pending: 1,
+        InProgress: 0,
+      });
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should not fetch if location is not set', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: '', uuid: '' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(mockTabs);
+      });
+
+      expect(fetchOrders).not.toHaveBeenCalled();
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should not fetch if user is not set', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: {} as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders(mockTabs);
+      });
+
+      expect(fetchOrders).not.toHaveBeenCalled();
+    });
+
+    it('should not fetch if tabs array is empty', async () => {
+      const { result } = renderHook(() => useOrdersStore());
+
+      act(() => {
+        useOrdersStore.setState({
+          currentUser: { uuid: 'user-123' } as User,
+          currentLocation: { name: 'Ward A', uuid: 'location-123' },
+        });
+      });
+
+      await act(async () => {
+        await result.current.fetchAllPendingOrders([]);
+      });
+
+      expect(fetchOrders).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('transformOrderData', () => {
+    beforeEach(() => {
+      (calculateAge as jest.Mock).mockReturnValue({
+        years: 35,
+        months: 1,
+        days: 2,
+      });
+    });
+
+    it('should transform order response to PatientOrderRow', () => {
+      const mockResponse: OrderResponseItem[] = [
+        {
+          uuid: 'patient-123',
+          identifier: 'PAT001',
+          name: 'John Doe',
+          gender: 'Male',
+          birthdate: new Date('1990-01-15').getTime(),
+          orders: JSON.stringify([
+            {
+              orderUuid: 'order-1',
+              orderName: 'Blood Test',
+              priority: ORDER_PRIORITY.ROUTINE,
+              providerName: 'Dr. Smith',
+              dateTime: '2025-02-15T10:30:00',
+              providerComments: 'Fasting required',
+            },
+            {
+              orderUuid: 'order-2',
+              orderName: 'X-Ray',
+              priority: ORDER_PRIORITY.STAT,
+              providerName: 'Dr. Jones',
+              dateTime: '2025-02-15T11:00:00',
+              providerComments: 'Urgent',
+            },
+          ]),
+        },
+      ];
+
+      const result = transformOrderData(mockResponse);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({
+        identifier: 'PAT001',
+        id: 'patient-123',
+        patientName: 'John Doe',
+        totalOrdersCount: 2,
+        urgentCount: 1,
+        isExpandable: true,
+      });
+
+      expect(result[0].orders).toHaveLength(2);
+      expect(result[0].orders[0]).toMatchObject({
+        id: 'order-1',
+        orderName: 'Blood Test',
+        priority: ORDER_PRIORITY.ROUTINE,
+        provider: 'Dr. Smith',
+        providerComments: 'Fasting required',
+      });
+
+      expect(result[0].orders[0].patient).toEqual({
+        dateOfBirth: '15 Jan 1990',
+        gender: 'Male',
+        name: 'John Doe',
+        age: '35 years 1 months 2 days',
+      });
+    });
+
+    it('should handle empty orders string', () => {
+      const mockResponse: OrderResponseItem[] = [
+        {
+          uuid: 'patient-123',
+          identifier: 'PAT001',
+          name: 'John Doe',
+          gender: 'Male',
+          birthdate: new Date('1990-01-15').getTime(),
+          orders: '',
+        },
+      ];
+
+      const result = transformOrderData(mockResponse);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].totalOrdersCount).toBe(0);
+      expect(result[0].urgentCount).toBe(0);
+      expect(result[0].orders).toHaveLength(0);
+    });
+
+    it('should handle orders with newlines in JSON', () => {
+      const mockResponse: OrderResponseItem[] = [
+        {
+          uuid: 'patient-123',
+          identifier: 'PAT001',
+          name: 'John Doe',
+          gender: 'Male',
+          birthdate: new Date('1990-01-15').getTime(),
+          orders: JSON.stringify([
+            {
+              orderUuid: 'order-1',
+              orderName: 'Blood Test',
+              priority: ORDER_PRIORITY.ROUTINE,
+              providerName: 'Dr. Smith',
+              dateTime: '2025-02-15T10:30:00',
+              providerComments: 'Line 1\nLine 2\nLine 3',
+            },
+          ]).replace(/\\n/g, '\n'),
+        },
+      ];
+
+      const result = transformOrderData(mockResponse);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].orders[0].providerComments).toContain('Line 1');
+    });
+
+    it('should count urgent orders correctly', () => {
+      const mockResponse: OrderResponseItem[] = [
+        {
+          uuid: 'patient-123',
+          identifier: 'PAT001',
+          name: 'John Doe',
+          gender: 'Male',
+          birthdate: new Date('1990-01-15').getTime(),
+          orders: JSON.stringify([
+            {
+              orderUuid: 'order-1',
+              orderName: 'Test 1',
+              priority: ORDER_PRIORITY.STAT,
+              providerName: 'Dr. Smith',
+              dateTime: '2025-02-15T10:30:00',
+            },
+            {
+              orderUuid: 'order-2',
+              orderName: 'Test 2',
+              priority: ORDER_PRIORITY.STAT,
+              providerName: 'Dr. Smith',
+              dateTime: '2025-02-15T11:00:00',
+            },
+            {
+              orderUuid: 'order-3',
+              orderName: 'Test 3',
+              priority: ORDER_PRIORITY.ROUTINE,
+              providerName: 'Dr. Smith',
+              dateTime: '2025-02-15T12:00:00',
+            },
+          ]),
+        },
+      ];
+
+      const result = transformOrderData(mockResponse);
+
+      expect(result[0].urgentCount).toBe(2);
+      expect(result[0].totalOrdersCount).toBe(3);
+    });
+
+    it('should handle null age from calculateAge', () => {
+      (calculateAge as jest.Mock).mockReturnValue(null);
+
+      const mockResponse: OrderResponseItem[] = [
+        {
+          uuid: 'patient-123',
+          identifier: 'PAT001',
+          name: 'John Doe',
+          gender: 'Male',
+          birthdate: new Date('1990-01-15').getTime(),
+          orders: JSON.stringify([
+            {
+              orderUuid: 'order-1',
+              orderName: 'Blood Test',
+              priority: ORDER_PRIORITY.ROUTINE,
+              providerName: 'Dr. Smith',
+              dateTime: '2025-02-15T10:30:00',
+            },
+          ]),
+        },
+      ];
+
+      const result = transformOrderData(mockResponse);
+
+      expect(result[0].orders[0].patient?.age).toBeUndefined();
     });
   });
 });

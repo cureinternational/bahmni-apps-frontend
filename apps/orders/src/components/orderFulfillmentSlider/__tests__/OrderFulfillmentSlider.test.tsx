@@ -3,6 +3,7 @@ import '@testing-library/jest-dom';
 import { IntlProvider } from 'react-intl';
 import { useOrdersConfig } from '../../../hooks/useOrdersConfig';
 import { Order } from '../../../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../../../models/ordersConfig';
 import useOrdersStore from '../../../stores/ordersStore';
 import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 
@@ -47,7 +48,7 @@ const mockOrder: Order = {
   id: 'order-1',
   orderName: 'New Cast - Plaster',
   orderType: 'Rehab Order',
-  priority: 'Urgent',
+  priority: ORDER_PRIORITY.STAT,
   status: 'New',
   provider: 'Mike Ronoh',
   dateTime: '12 Nov 25 04:24 PM',

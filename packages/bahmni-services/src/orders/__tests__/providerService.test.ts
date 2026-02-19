@@ -57,6 +57,7 @@ describe('providerService', () => {
       });
 
       it('should use uuid as id when uuid is present', async () => {
+        mockGet.mockReset();
         const mockResponse: ProviderResponse = {
           results: [
             {
@@ -69,12 +70,13 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('Lab Order');
+        const result = await fetchProvidersByTab('P&O Order');
 
         expect(result[0].id).toBe('new-uuid');
       });
 
       it('should use id as fallback when uuid is missing', async () => {
+        mockGet.mockReset();
         const mockResponse: ProviderResponse = {
           results: [
             {
@@ -93,6 +95,7 @@ describe('providerService', () => {
       });
 
       it('should fetch providers for all configured tab labels', async () => {
+        mockGet.mockReset();
         const tabLabels = Object.keys(TAB_PRACTITIONER_TYPE_MAP);
 
         for (const tabLabel of tabLabels) {
@@ -125,6 +128,7 @@ describe('providerService', () => {
       });
 
       it('should return empty array when response is null', async () => {
+        mockGet.mockReset();
         mockGet.mockResolvedValueOnce(null);
 
         const result = await fetchProvidersByTab('Radiology Order');
@@ -133,14 +137,16 @@ describe('providerService', () => {
       });
 
       it('should return empty array when results is undefined', async () => {
+        mockGet.mockReset();
         mockGet.mockResolvedValueOnce({} as ProviderResponse);
 
-        const result = await fetchProvidersByTab('Lab Order');
+        const result = await fetchProvidersByTab('Speech Therapy Order');
 
         expect(result).toEqual([]);
       });
 
       it('should return empty array when results is not an array', async () => {
+        mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: 'not-an-array' } as any);
 
         const result = await fetchProvidersByTab('Rehab Order');
@@ -149,6 +155,7 @@ describe('providerService', () => {
       });
 
       it('should return empty array when results is empty', async () => {
+        mockGet.mockReset();
         const mockResponse: ProviderResponse = {
           results: [],
         };
@@ -163,6 +170,7 @@ describe('providerService', () => {
 
     describe('Error Handling', () => {
       it('should return empty array when API call throws error', async () => {
+        mockGet.mockReset();
         mockGet.mockRejectedValueOnce(new Error('API Error'));
 
         const result = await fetchProvidersByTab('Radiology Order');
@@ -171,14 +179,16 @@ describe('providerService', () => {
       });
 
       it('should return empty array when API call throws network error', async () => {
+        mockGet.mockReset();
         mockGet.mockRejectedValueOnce(new Error('Network Error'));
 
-        const result = await fetchProvidersByTab('Lab Order');
+        const result = await fetchProvidersByTab('Rehab Order');
 
         expect(result).toEqual([]);
       });
 
       it('should return empty array when API returns 404', async () => {
+        mockGet.mockReset();
         mockGet.mockRejectedValueOnce({ status: 404, message: 'Not Found' });
 
         const result = await fetchProvidersByTab('Speech Therapy Order');
@@ -187,6 +197,7 @@ describe('providerService', () => {
       });
 
       it('should return empty array when API returns 500', async () => {
+        mockGet.mockReset();
         mockGet.mockRejectedValueOnce({
           status: 500,
           message: 'Internal Server Error',
@@ -200,6 +211,7 @@ describe('providerService', () => {
 
     describe('Data Mapping', () => {
       it('should correctly map all provider fields', async () => {
+        mockGet.mockReset();
         const mockResponse: ProviderResponse = {
           results: [
             {
@@ -222,6 +234,7 @@ describe('providerService', () => {
       });
 
       it('should handle providers with special characters in name', async () => {
+        mockGet.mockReset();
         const mockResponse: ProviderResponse = {
           results: [
             {
@@ -234,12 +247,13 @@ describe('providerService', () => {
 
         mockGet.mockResolvedValueOnce(mockResponse);
 
-        const result = await fetchProvidersByTab('Lab Order');
+        const result = await fetchProvidersByTab('Rehab Order');
 
         expect(result[0].name).toBe("Dr. O'Brien-Smith");
       });
 
       it('should handle multiple providers correctly', async () => {
+        mockGet.mockReset();
         const mockResponse: ProviderResponse = {
           results: [
             { id: 'id-1', name: 'Provider 1', uuid: 'uuid-1' },
@@ -267,6 +281,7 @@ describe('providerService', () => {
 
     describe('URL Construction', () => {
       it('should construct correct URL with URL-encoded practitioner type', async () => {
+        mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: [] });
 
         await fetchProvidersByTab('Radiology Order');
@@ -276,17 +291,19 @@ describe('providerService', () => {
         );
       });
 
-      it('should construct correct URL for Lab Order', async () => {
+      it('should construct correct URL for Speech Therapy Order', async () => {
+        mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: [] });
 
-        await fetchProvidersByTab('Lab Order');
+        await fetchProvidersByTab('Speech Therapy Order');
 
         expect(mockGet).toHaveBeenCalledWith(
-          expect.stringContaining('attrValue=Laboratory%20Technologist'),
+          expect.stringContaining('attrValue=Speech%20Therapist'),
         );
       });
 
       it('should include all required query parameters', async () => {
+        mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: [] });
 
         await fetchProvidersByTab('P&O Order');
@@ -299,6 +316,7 @@ describe('providerService', () => {
 
     describe('Provider Interface', () => {
       it('should return providers matching the Provider interface', async () => {
+        mockGet.mockReset();
         const mockResponse: ProviderResponse = {
           results: [
             {
