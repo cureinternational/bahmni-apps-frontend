@@ -113,6 +113,10 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
         ...state,
         ordersData: transformOrderData(orders),
         isLoading: false,
+        tabCounts: {
+          ...state.tabCounts,
+          [tabs[tabIndex].label]: orders.length,
+        },
       }));
     }
   },
