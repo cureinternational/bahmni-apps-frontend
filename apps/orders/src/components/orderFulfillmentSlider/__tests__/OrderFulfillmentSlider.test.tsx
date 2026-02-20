@@ -101,25 +101,29 @@ describe('OrderFulfillmentSlider', () => {
         },
       ],
       orderStatusesAvailable: [
-        { value: 'New', label: 'New', translationKey: 'NEW' },
+        { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
         {
           value: 'In Progress',
           label: 'In Progress',
-          translationKey: 'IN_PROGRESS',
+          translationKey: 'STATUS_IN_PROGRESS',
         },
         {
           value: 'Acknowledged',
           label: 'Acknowledged',
-          translationKey: 'ACKNOWLEDGED',
+          translationKey: 'STATUS_ACKNOWLEDGED',
         },
-        { value: 'Completed', label: 'Completed', translationKey: 'COMPLETED' },
+        {
+          value: 'Completed',
+          label: 'Completed',
+          translationKey: 'STATUS_COMPLETED',
+        },
       ],
       orderStatusesPreSelected: [
-        { value: 'New', label: 'New', translationKey: 'NEW' },
+        { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
         {
           value: 'In Progress',
           label: 'In Progress',
-          translationKey: 'IN_PROGRESS',
+          translationKey: 'STATUS_IN_PROGRESS',
         },
       ],
     },
@@ -229,15 +233,15 @@ describe('OrderFulfillmentSlider', () => {
             },
           ],
           orderStatusesAvailable: [
-            { value: 'New', label: 'New', translationKey: 'NEW' },
+            { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
             {
               value: 'In Progress',
               label: 'In Progress',
-              translationKey: 'IN_PROGRESS',
+              translationKey: 'STATUS_IN_PROGRESS',
             },
           ],
           orderStatusesPreSelected: [
-            { value: 'New', label: 'New', translationKey: 'NEW' },
+            { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
           ],
         },
       });
@@ -292,15 +296,15 @@ describe('OrderFulfillmentSlider', () => {
             },
           ],
           orderStatusesAvailable: [
-            { value: 'New', label: 'New', translationKey: 'NEW' },
+            { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
             {
               value: 'In Progress',
               label: 'In Progress',
-              translationKey: 'IN_PROGRESS',
+              translationKey: 'STATUS_IN_PROGRESS',
             },
           ],
           orderStatusesPreSelected: [
-            { value: 'New', label: 'New', translationKey: 'NEW' },
+            { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
           ],
         },
       });
@@ -321,15 +325,15 @@ describe('OrderFulfillmentSlider', () => {
         ordersTableConfig: {
           manageOrdersPanelPatientDetails: [],
           orderStatusesAvailable: [
-            { value: 'New', label: 'New', translationKey: 'NEW' },
+            { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
             {
               value: 'In Progress',
               label: 'In Progress',
-              translationKey: 'IN_PROGRESS',
+              translationKey: 'STATUS_IN_PROGRESS',
             },
           ],
           orderStatusesPreSelected: [
-            { value: 'New', label: 'New', translationKey: 'NEW' },
+            { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
           ],
         },
       });
@@ -873,15 +877,15 @@ describe('OrderFulfillmentSlider', () => {
             },
           ],
           orderStatusesAvailable: [
-            { value: 'New', label: 'New', translationKey: 'NEW' },
+            { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
             {
               value: 'In Progress',
               label: 'In Progress',
-              translationKey: 'IN_PROGRESS',
+              translationKey: 'STATUS_IN_PROGRESS',
             },
           ],
           orderStatusesPreSelected: [
-            { value: 'New', label: 'New', translationKey: 'NEW' },
+            { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
           ],
         },
       });

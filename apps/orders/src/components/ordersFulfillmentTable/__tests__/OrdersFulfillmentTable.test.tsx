@@ -15,20 +15,24 @@ jest.mock('../../../hooks/useOrdersConfig', () => ({
   useOrdersConfig: () => ({
     ordersTableConfig: {
       orderStatusesAvailable: [
-        { value: 'New', label: 'New', translationKey: 'NEW' },
+        { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
         {
           value: 'In Progress',
           label: 'In Progress',
-          translationKey: 'IN_PROGRESS',
+          translationKey: 'STATUS_IN_PROGRESS',
         },
-        { value: 'Completed', label: 'Completed', translationKey: 'COMPLETED' },
+        {
+          value: 'Completed',
+          label: 'Completed',
+          translationKey: 'STATUS_COMPLETED',
+        },
       ],
       orderStatusesPreSelected: [
-        { value: 'New', label: 'New', translationKey: 'NEW' },
+        { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
         {
           value: 'In Progress',
           label: 'In Progress',
-          translationKey: 'IN_PROGRESS',
+          translationKey: 'STATUS_IN_PROGRESS',
         },
       ],
       manageOrdersPanelPatientDetails: [],
