@@ -101,12 +101,27 @@ describe('OrderFulfillmentSlider', () => {
         },
       ],
       orderStatusesAvailable: [
-        'New',
-        'In Progress',
-        'Acknowledged',
-        'Completed',
+        { value: 'New', label: 'New', translationKey: 'NEW' },
+        {
+          value: 'In Progress',
+          label: 'In Progress',
+          translationKey: 'IN_PROGRESS',
+        },
+        {
+          value: 'Acknowledged',
+          label: 'Acknowledged',
+          translationKey: 'ACKNOWLEDGED',
+        },
+        { value: 'Completed', label: 'Completed', translationKey: 'COMPLETED' },
       ],
-      orderStatusesPreSelected: ['New', 'In Progress'],
+      orderStatusesPreSelected: [
+        { value: 'New', label: 'New', translationKey: 'NEW' },
+        {
+          value: 'In Progress',
+          label: 'In Progress',
+          translationKey: 'IN_PROGRESS',
+        },
+      ],
     },
   };
 
@@ -164,7 +179,7 @@ describe('OrderFulfillmentSlider', () => {
       <OrderFulfillmentSlider order={mockOrder} onClose={mockOnClose} isOpen />,
     );
 
-    const cancelButton = screen.getByText('Cancel');
+    const cancelButton = screen.getByText('CANCEL');
     fireEvent.click(cancelButton);
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
@@ -213,8 +228,17 @@ describe('OrderFulfillmentSlider', () => {
               translationKey: 'GENDER',
             },
           ],
-          orderStatusesAvailable: ['New', 'In Progress'],
-          orderStatusesPreSelected: ['New'],
+          orderStatusesAvailable: [
+            { value: 'New', label: 'New', translationKey: 'NEW' },
+            {
+              value: 'In Progress',
+              label: 'In Progress',
+              translationKey: 'IN_PROGRESS',
+            },
+          ],
+          orderStatusesPreSelected: [
+            { value: 'New', label: 'New', translationKey: 'NEW' },
+          ],
         },
       });
 
@@ -267,8 +291,17 @@ describe('OrderFulfillmentSlider', () => {
               translationKey: 'PHONE',
             },
           ],
-          orderStatusesAvailable: ['New', 'In Progress'],
-          orderStatusesPreSelected: ['New'],
+          orderStatusesAvailable: [
+            { value: 'New', label: 'New', translationKey: 'NEW' },
+            {
+              value: 'In Progress',
+              label: 'In Progress',
+              translationKey: 'IN_PROGRESS',
+            },
+          ],
+          orderStatusesPreSelected: [
+            { value: 'New', label: 'New', translationKey: 'NEW' },
+          ],
         },
       });
 
@@ -287,8 +320,17 @@ describe('OrderFulfillmentSlider', () => {
       useOrdersConfig.mockReturnValue({
         ordersTableConfig: {
           manageOrdersPanelPatientDetails: [],
-          orderStatusesAvailable: ['New', 'In Progress'],
-          orderStatusesPreSelected: ['New'],
+          orderStatusesAvailable: [
+            { value: 'New', label: 'New', translationKey: 'NEW' },
+            {
+              value: 'In Progress',
+              label: 'In Progress',
+              translationKey: 'IN_PROGRESS',
+            },
+          ],
+          orderStatusesPreSelected: [
+            { value: 'New', label: 'New', translationKey: 'NEW' },
+          ],
         },
       });
 
@@ -421,8 +463,8 @@ describe('OrderFulfillmentSlider', () => {
         />,
       );
 
-      const saveButton = screen.getByText('Save');
-      const cancelButton = screen.getByText('Cancel');
+      const saveButton = screen.getByText('SAVE');
+      const cancelButton = screen.getByText('CANCEL');
       expect(saveButton).toBeInTheDocument();
       expect(cancelButton).toBeInTheDocument();
     });
@@ -543,7 +585,7 @@ describe('OrderFulfillmentSlider', () => {
         />,
       );
 
-      const saveButton = screen.getByText('Save');
+      const saveButton = screen.getByText('SAVE');
       // The button should exist
       expect(saveButton).toBeInTheDocument();
     });
@@ -559,7 +601,7 @@ describe('OrderFulfillmentSlider', () => {
         />,
       );
 
-      const saveButton = screen.getByText('Save');
+      const saveButton = screen.getByText('SAVE');
       expect(saveButton).toBeInTheDocument();
     });
 
@@ -830,8 +872,17 @@ describe('OrderFulfillmentSlider', () => {
               translationKey: 'CITY',
             },
           ],
-          orderStatusesAvailable: ['New', 'In Progress'],
-          orderStatusesPreSelected: ['New'],
+          orderStatusesAvailable: [
+            { value: 'New', label: 'New', translationKey: 'NEW' },
+            {
+              value: 'In Progress',
+              label: 'In Progress',
+              translationKey: 'IN_PROGRESS',
+            },
+          ],
+          orderStatusesPreSelected: [
+            { value: 'New', label: 'New', translationKey: 'NEW' },
+          ],
         },
       });
 

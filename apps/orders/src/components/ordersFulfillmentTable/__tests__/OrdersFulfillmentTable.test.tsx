@@ -14,8 +14,23 @@ jest.mock('@bahmni/services', () => ({
 jest.mock('../../../hooks/useOrdersConfig', () => ({
   useOrdersConfig: () => ({
     ordersTableConfig: {
-      orderStatusesAvailable: ['New', 'In Progress', 'Completed'],
-      orderStatusesPreSelected: ['New', 'In Progress'],
+      orderStatusesAvailable: [
+        { value: 'New', label: 'New', translationKey: 'NEW' },
+        {
+          value: 'In Progress',
+          label: 'In Progress',
+          translationKey: 'IN_PROGRESS',
+        },
+        { value: 'Completed', label: 'Completed', translationKey: 'COMPLETED' },
+      ],
+      orderStatusesPreSelected: [
+        { value: 'New', label: 'New', translationKey: 'NEW' },
+        {
+          value: 'In Progress',
+          label: 'In Progress',
+          translationKey: 'IN_PROGRESS',
+        },
+      ],
       manageOrdersPanelPatientDetails: [],
     },
     tabs: [

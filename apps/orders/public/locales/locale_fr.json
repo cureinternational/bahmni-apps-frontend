@@ -15,6 +15,9 @@
   "DATE_AND_TIME": "Date et Heure",
   "OWNER": "Propriétaire",
   "NEW": "Nouveau",
+  "ACKNOWLEDGED": "Reconnu",
+  "IN_PROGRESS": "En Cours",
+  "COMPLETED": "Terminé",
   "URGENT": "Urgent",
   "UNASSIGNED": "Non Assigné",
   "NO_ORDERS_FOUND": "Aucune ordonnance trouvée",
@@ -34,7 +37,7 @@
   "DOB": "Date de Naissance",
   "APPLY": "Appliquer",
   "CANCEL": "Annuler",
-  "SAVE": "Enregistrer",
+  "SAVE": "Sauvegarder",
   "CHOOSE_AN_OPTION": "Choisir une option",
   "ORDER_OWNER":  "Propriétaire de l'Ordonnance",
   "NOTES": "Remarques"
