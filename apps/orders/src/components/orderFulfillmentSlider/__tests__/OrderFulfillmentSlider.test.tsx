@@ -7,9 +7,20 @@ import { ORDER_PRIORITY } from '../../../models/ordersConfig';
 import useOrdersStore from '../../../stores/ordersStore';
 import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 
+const mockCreateTask = jest.fn();
+
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
+  }),
+  createTask: (...args: unknown[]) => mockCreateTask(...args),
+}));
+
+const mockAddNotification = jest.fn();
+
+jest.mock('@bahmni/widgets', () => ({
+  useNotification: () => ({
+    addNotification: mockAddNotification,
   }),
 }));
 
@@ -992,6 +1003,123 @@ describe('OrderFulfillmentSlider', () => {
       expect(screen.getByTestId('order-owner-select')).toBeInTheDocument();
       expect(screen.getByTestId('order-status-select')).toBeInTheDocument();
       expect(screen.getByTestId('order-notes')).toBeInTheDocument();
+    });
+  });
+
+  describe('Save Notifications', () => {
+    const orderWithMappableStatus: Order = {
+      ...mockOrder,
+      status: 'In Progress',
+    };
+
+    it('shows success notification with timeout on successful save', async () => {
+      mockCreateTask.mockResolvedValue({});
+      useOrdersConfig.mockReturnValue(mockConfig);
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={orderWithMappableStatus}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+
+      const notesTextarea = screen.getByTestId('order-notes');
+      fireEvent.change(notesTextarea, { target: { value: 'Test note' } });
+
+      const saveButton = screen.getByText('SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ORDER_SAVE_SUCCESS',
+          message: '',
+          type: 'success',
+          timeout: 5000,
+        });
+      });
+    });
+
+    it('shows error notification with timeout on save failure', async () => {
+      mockCreateTask.mockRejectedValue(new Error('Network error'));
+      useOrdersConfig.mockReturnValue(mockConfig);
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={orderWithMappableStatus}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+
+      const notesTextarea = screen.getByTestId('order-notes');
+      fireEvent.change(notesTextarea, { target: { value: 'Test note' } });
+
+      const saveButton = screen.getByText('SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith({
+          title: 'ORDER_SAVE_ERROR',
+          message: '',
+          type: 'error',
+          timeout: 5000,
+        });
+      });
+    });
+
+    it('calls onSaveSuccess callback after successful save', async () => {
+      mockCreateTask.mockResolvedValue({});
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const mockOnSaveSuccess = jest.fn();
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={orderWithMappableStatus}
+          onClose={mockOnClose}
+          isOpen
+          onSaveSuccess={mockOnSaveSuccess}
+        />,
+      );
+
+      const notesTextarea = screen.getByTestId('order-notes');
+      fireEvent.change(notesTextarea, { target: { value: 'Test note' } });
+
+      const saveButton = screen.getByText('SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockOnSaveSuccess).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    it('does not call onSaveSuccess on save failure', async () => {
+      mockCreateTask.mockRejectedValue(new Error('Network error'));
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const mockOnSaveSuccess = jest.fn();
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={orderWithMappableStatus}
+          onClose={mockOnClose}
+          isOpen
+          onSaveSuccess={mockOnSaveSuccess}
+        />,
+      );
+
+      const notesTextarea = screen.getByTestId('order-notes');
+      fireEvent.change(notesTextarea, { target: { value: 'Test note' } });
+
+      const saveButton = screen.getByText('SAVE');
+      fireEvent.click(saveButton);
+
+      await waitFor(() => {
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'error' }),
+        );
+      });
+
+      expect(mockOnSaveSuccess).not.toHaveBeenCalled();
     });
   });
 

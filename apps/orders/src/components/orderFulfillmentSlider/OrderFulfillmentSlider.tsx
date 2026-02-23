@@ -1,8 +1,10 @@
 import { SaveAndCancelButtons } from '@bahmni/design-system';
-import { useTranslation, Provider } from '@bahmni/services';
+import { useTranslation, Provider, createTask } from '@bahmni/services';
+import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
 import React, { useEffect, useState } from 'react';
+import { UI_STATUS_TO_FHIR_TASK_STATUS } from '../../constants/orderStatusMappings';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import {
   Order,
@@ -17,6 +19,7 @@ interface OrderFulfillmentSliderProps {
   onClose: () => void;
   isOpen: boolean;
   tabLabel?: string;
+  onSaveSuccess?: () => void;
 }
 
 export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
@@ -24,13 +27,16 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   onClose,
   isOpen,
   tabLabel = '',
+  onSaveSuccess,
 }) => {
   const { t } = useTranslation();
+  const { addNotification } = useNotification();
   const { ordersTableConfig } = useOrdersConfig();
   const { fetchProviders, providers } = useOrdersStore();
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<OrderStatus | ''>('');
   const [owner, setOwner] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
 
   const availableStatuses: OrderStatusConfig[] =
@@ -40,13 +46,19 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];
 
   useEffect(() => {
-    if (isOpen && tabLabel) {
-      fetchProviders(tabLabel);
-    } else if (!isOpen) {
+    if (isOpen) {
+      if (tabLabel) {
+        fetchProviders(tabLabel);
+      }
+      setStatus(order?.status ?? '');
+      setOwner(order?.ownerUuid ?? '');
+      setNotes('');
+    } else {
       setNotes('');
       setStatus('');
       setOwner('');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, tabLabel, fetchProviders]);
 
   useEffect(() => {
@@ -68,7 +80,42 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     return value !== undefined && value !== null ? String(value) : '';
   };
 
-  const hasChanges = Boolean(owner || status || notes.trim());
+  const hasChanges =
+    status !== (order?.status ?? '') ||
+    owner !== (order?.ownerUuid ?? '') ||
+    Boolean(notes.trim());
+
+  const handleSave = async () => {
+    const fhirStatus = UI_STATUS_TO_FHIR_TASK_STATUS[status as OrderStatus];
+    if (!fhirStatus || !order) {
+      return;
+    }
+    try {
+      setIsSaving(true);
+      await createTask(
+        order.id,
+        fhirStatus,
+        notes.trim() || undefined,
+        owner || undefined,
+      );
+      addNotification({
+        title: t('ORDER_SAVE_SUCCESS'),
+        message: '',
+        type: 'success',
+        timeout: 5000,
+      });
+      onSaveSuccess?.();
+    } catch {
+      addNotification({
+        title: t('ORDER_SAVE_ERROR'),
+        message: '',
+        type: 'error',
+        timeout: 5000,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (!isOpen || !order) {
     return null;
@@ -190,9 +237,9 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
       </div>
 
       <SaveAndCancelButtons
-        onSave={() => {}}
+        onSave={handleSave}
         onClose={onClose}
-        isSaveDisabled={!hasChanges}
+        isSaveDisabled={!hasChanges || isSaving}
         primaryButtonText={t('SAVE')}
         cancelButtonText={t('CANCEL')}
       />

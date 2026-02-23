@@ -10,6 +10,7 @@ import {
 } from '@bahmni/services';
 import moment from 'moment';
 import { create } from 'zustand';
+import { DB_FULFILLER_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import { PatientOrderRow } from '../models/orderFulfillment';
 import { ORDER_PRIORITY, OrderItem, OrderTab } from '../models/ordersConfig';
 
@@ -51,8 +52,11 @@ export const transformOrderData = (
         dateTime: moment(item.dateTime).format('DD MMM YY hh:mm A'),
         providerComments: item.providerComments,
         orderType: '',
-        status: '',
-        owner: '',
+        status: item.fulfillerStatus
+          ? (DB_FULFILLER_STATUS_TO_UI_STATUS[item.fulfillerStatus] ?? 'New')
+          : 'New',
+        owner: item.ownerName ?? '',
+        ownerUuid: item.ownerUuid ?? '',
         patient: {
           dateOfBirth: moment(order.birthdate).format('DD MMM YYYY'),
           gender: order.gender,

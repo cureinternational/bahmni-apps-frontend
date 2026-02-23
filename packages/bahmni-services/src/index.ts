@@ -306,3 +306,4 @@ export {
 } from './events/consultationEvents';
 
 export * from './orders';
+export { createTask, type CreateTaskPayload } from './taskService';
