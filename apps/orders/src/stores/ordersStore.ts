@@ -55,7 +55,8 @@ export const transformOrderData = (
         status: item.fulfillerStatus
           ? (DB_FULFILLER_STATUS_TO_UI_STATUS[item.fulfillerStatus] ?? 'New')
           : 'New',
-        owner: item.ownerName ?? '',
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        owner: item.ownerName ? item.ownerName : null,
         ownerUuid: item.ownerUuid ?? '',
         patient: {
           dateOfBirth: moment(order.birthdate).format('DD MMM YYYY'),
@@ -68,7 +69,7 @@ export const transformOrderData = (
     return {
       identifier: order.identifier,
       id: order.uuid,
-      recentOrdersCount: 0,
+      recentOrdersCount: ordersDetails.filter((order) => !order.owner).length,
       totalOrdersCount: orders.length,
       patientName: order.name,
       urgentCount: urgentOrders,

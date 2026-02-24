@@ -23,3 +23,10 @@ export const DB_FULFILLER_STATUS_TO_UI_STATUS: Record<string, OrderStatus> = {
   COMPLETED: 'Completed',
   EXCEPTION: 'New',
 };
+
+/**
+ * Default status pre-populated in the slider when a 'New' order is opened.
+ * 'New' orders require immediate acknowledgement, so the slider auto-selects
+ * 'Acknowledged' to prompt the user to confirm they have seen the order.
+ */
+export const DEFAULT_STATUS_FOR_NEW_ORDER: OrderStatus = 'Acknowledged';

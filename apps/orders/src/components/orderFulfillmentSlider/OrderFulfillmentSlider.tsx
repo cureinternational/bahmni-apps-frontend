@@ -4,7 +4,10 @@ import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
 import React, { useEffect, useState } from 'react';
-import { UI_STATUS_TO_FHIR_TASK_STATUS } from '../../constants/orderStatusMappings';
+import {
+  UI_STATUS_TO_FHIR_TASK_STATUS,
+  DEFAULT_STATUS_FOR_NEW_ORDER,
+} from '../../constants/orderStatusMappings';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import {
   Order,
@@ -39,8 +42,9 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
 
-  const availableStatuses: OrderStatusConfig[] =
-    (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? [];
+  const availableStatuses: OrderStatusConfig[] = (
+    (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
+  ).filter((s) => s.value !== 'New');
 
   const patientDetailFields =
     ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];
@@ -50,7 +54,11 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
       if (tabLabel) {
         fetchProviders(tabLabel);
       }
-      setStatus(order?.status ?? '');
+      const initialStatus =
+        order?.status === 'New'
+          ? DEFAULT_STATUS_FOR_NEW_ORDER
+          : (order?.status ?? '');
+      setStatus(initialStatus);
       setOwner(order?.ownerUuid ?? '');
       setNotes('');
     } else {
@@ -197,7 +205,11 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
             <ComboBox
               id="order-status-select"
               data-testid="order-status-select"
-              titleText={t('STATUS')}
+              titleText={
+                <span>
+                  {t('STATUS')} <span className={styles.required}>*</span>
+                </span>
+              }
               placeholder={t('CHOOSE_AN_OPTION')}
               items={availableStatuses}
               itemToString={(item) => (item ? t(item.translationKey) : '')}
@@ -239,7 +251,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
       <SaveAndCancelButtons
         onSave={handleSave}
         onClose={onClose}
-        isSaveDisabled={!hasChanges || isSaving}
+        isSaveDisabled={!status || !hasChanges || isSaving}
         primaryButtonText={t('SAVE')}
         cancelButtonText={t('CANCEL')}
       />
