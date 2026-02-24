@@ -37,12 +37,16 @@ export const transformOrderData = (
     }
 
     let urgentOrders = 0;
+    let newOrders = 0;
     const { birthdate } = order;
     const age = calculateAge(moment(birthdate).format('YYYY-MM-DD'));
     const { years, months, days } = age ?? { years: 0, months: 0, days: 0 };
     const ordersDetails = orders.map((item) => {
       if (item.priority === ORDER_PRIORITY.STAT) {
         urgentOrders += 1;
+      }
+      if (!item.fulfillerStatus) {
+        newOrders += 1;
       }
       return {
         id: item.orderUuid,
@@ -69,7 +73,7 @@ export const transformOrderData = (
     return {
       identifier: order.identifier,
       id: order.uuid,
-      recentOrdersCount: ordersDetails.filter((order) => !order.owner).length,
+      recentOrdersCount: newOrders,
       totalOrdersCount: orders.length,
       patientName: order.name,
       urgentCount: urgentOrders,

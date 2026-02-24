@@ -585,7 +585,7 @@ describe('ordersStore', () => {
       expect(result[0].totalOrdersCount).toBe(3);
     });
 
-    it('should count unassigned orders as recent orders', () => {
+    it('should count orders without a fulfiller status as recent orders', () => {
       const mockResponse: OrderResponseItem[] = [
         {
           uuid: 'patient-123',
@@ -607,7 +607,7 @@ describe('ordersStore', () => {
               priority: ORDER_PRIORITY.STAT,
               providerName: 'Dr. Jones',
               dateTime: '2025-02-15T11:00:00',
-              ownerName: 'Ted Okatch',
+              fulfillerStatus: 'IN_PROGRESS',
             },
             {
               orderUuid: 'order-3',
