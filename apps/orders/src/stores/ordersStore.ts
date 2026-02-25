@@ -10,8 +10,8 @@ import {
 } from '@bahmni/services';
 import moment from 'moment';
 import { create } from 'zustand';
-import { DB_FULFILLER_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../constants/app';
+import { DB_FULFILLER_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import { PatientOrderRow } from '../models/orderFulfillment';
 import { ORDER_PRIORITY, OrderItem, OrderTab } from '../models/ordersConfig';
 
