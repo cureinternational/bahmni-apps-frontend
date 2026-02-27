@@ -60,7 +60,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           : (order?.status ?? '');
       setStatus(initialStatus);
       setOwner(order?.ownerUuid ?? '');
-      setNotes('');
+      setNotes(order?.note ?? '');
     } else {
       setNotes('');
       setStatus('');
