@@ -124,6 +124,7 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
           kind="secondary"
           onClick={handleApply}
           className={styles.applyButton}
+          disabled={tempSelection.length === 0}
         >
           <span>{t('APPLY')}</span>
         </Button>

@@ -1,7 +1,14 @@
 import { ExpandableSortableDataTable } from '@bahmni/design-system';
 import { useTranslation } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
-import React, { useMemo, useState, useRef, useCallback, Fragment } from 'react';
+import React, {
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+  Fragment,
+  useEffect,
+} from 'react';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import {
   PatientOrderRow,
@@ -22,6 +29,7 @@ interface OrdersFulfillmentTableProps {
   loading?: boolean;
   isCustomOrderTab?: boolean;
   onOrderClick?: (orderId: string) => void;
+  searchTerm?: string;
 }
 
 export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
@@ -30,6 +38,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   loading = false,
   isCustomOrderTab = false,
   onOrderClick,
+  searchTerm = '',
 }) => {
   const { t } = useTranslation();
   const { ordersTableConfig, tabs } = useOrdersConfig();
@@ -42,6 +51,17 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
   );
 
+  useEffect(() => {
+    if (searchTerm && searchTerm.trim().length >= 3) {
+      setSelectedStatuses([]);
+    } else if (searchTerm.trim().length === 0) {
+      setSelectedStatuses(
+        (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ??
+          [],
+      );
+    }
+  }, [searchTerm, ordersTableConfig]);
+
   const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
     setSelectedStatuses(statuses);
   };
@@ -49,6 +69,39 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const toggleStatusFilter = useCallback(() => {
     setIsStatusFilterOpen(!isStatusFilterOpen);
   }, [isStatusFilterOpen]);
+
+  const filteredRows = useMemo(() => {
+    const isSearchActive = searchTerm && searchTerm.trim().length >= 3;
+
+    if (selectedStatuses.length === 0) {
+      return isSearchActive ? rows : [];
+    }
+
+    const selectedStatusValues = selectedStatuses.map((s) => s.value);
+
+    return rows
+      .map((row) => {
+        const filteredOrders = row.orders.filter((order) =>
+          selectedStatusValues.includes(order.status),
+        );
+
+        if (filteredOrders.length === 0) {
+          return null;
+        }
+
+        const urgentCount = filteredOrders.filter(
+          (order) => order.priority === 'Urgent',
+        ).length;
+
+        return {
+          ...row,
+          orders: filteredOrders,
+          totalOrdersCount: filteredOrders.length,
+          urgentCount,
+        };
+      })
+      .filter((row): row is PatientOrderRow => row !== null);
+  }, [rows, selectedStatuses, searchTerm]);
 
   const totalNewOrdersCount = useMemo(
     () => rows.reduce((sum, row) => sum + row.recentOrdersCount, 0),
@@ -199,7 +252,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   return (
     <ExpandableSortableDataTable
       headers={customHeaders}
-      rows={rows}
+      rows={filteredRows}
       ariaLabel={t('ORDERS_FULFILLMENT_TABLE')}
       renderCell={renderCell}
       renderExpandedContent={renderExpandedContent}
