@@ -238,12 +238,11 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           <TextArea
             id="order-notes"
             data-testid="order-notes"
-            labelText=""
+            labelText={t('NOTES')}
             rows={4}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder={t('NOTES')}
-            className={styles.notesField}
           />
         </section>
       </div>
