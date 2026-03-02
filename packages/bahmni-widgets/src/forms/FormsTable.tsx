@@ -49,6 +49,7 @@ const FormsTable: React.FC<WidgetProps> = ({
   const [selectedRecord, setSelectedRecord] =
     useState<FormRecordViewModel | null>(null);
   const numberOfVisits = config?.numberOfVisits as number;
+  const formGroup = config?.formGroup as string[] | undefined;
 
   const emptyEncounterFilter = shouldEnableEncounterFilter(
     episodeOfCareUuids,
@@ -61,20 +62,24 @@ const FormsTable: React.FC<WidgetProps> = ({
     isError,
     error,
   } = useQuery<FormResponseData[], Error>({
-    queryKey: ['forms', patientUuid, episodeOfCareUuids],
+    queryKey: ['forms', patientUuid, episodeOfCareUuids, formGroup],
     queryFn: () => getPatientFormData(patientUuid!, undefined, numberOfVisits),
     enabled: !!patientUuid && !emptyEncounterFilter,
   });
 
-  // Filter forms data by encounterUuids if provided
+  // Filter forms data by encounterUuids and/or formGroup if provided
   const filteredFormsData = useMemo(() => {
-    if (!encounterUuids || encounterUuids.length === 0) {
-      return formsData;
+    let filtered = formsData;
+    if (encounterUuids && encounterUuids.length > 0) {
+      filtered = filtered.filter((form) =>
+        encounterUuids.includes(form.encounterUuid),
+      );
     }
-    return formsData.filter((form) =>
-      encounterUuids.includes(form.encounterUuid),
-    );
-  }, [formsData, encounterUuids]);
+    if (formGroup && formGroup.length > 0) {
+      filtered = filtered.filter((form) => formGroup.includes(form.formName));
+    }
+    return filtered;
+  }, [formsData, encounterUuids, formGroup]);
 
   // Fetch published forms to get form UUIDs
   const { data: publishedForms = [] } = useQuery<ObservationForm[]>({
