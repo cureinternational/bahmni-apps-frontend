@@ -14,6 +14,7 @@ import {
   PatientOrderRow,
   OrderStatusConfig,
 } from '../../models/orderFulfillment';
+import { ORDER_PRIORITY } from '../../models/ordersConfig';
 import useOrdersStore from '../../stores/ordersStore';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import LinkButton from '../linkButton/LinkButton';
@@ -51,16 +52,18 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
   );
 
+  const isSearchActive = searchTerm && searchTerm.trim().length >= 3;
+
   useEffect(() => {
-    if (searchTerm && searchTerm.trim().length >= 3) {
+    if (isSearchActive) {
       setSelectedStatuses([]);
-    } else if (searchTerm.trim().length === 0) {
+    } else {
       setSelectedStatuses(
-        (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ??
-          [],
+        (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
       );
     }
-  }, [searchTerm, ordersTableConfig]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSearchActive]);
 
   const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
     setSelectedStatuses(statuses);
@@ -70,11 +73,9 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     setIsStatusFilterOpen(!isStatusFilterOpen);
   }, [isStatusFilterOpen]);
 
-  const filteredRows = useMemo(() => {
-    const isSearchActive = searchTerm && searchTerm.trim().length >= 3;
-
+  const getFilteredRows = () => {
     if (selectedStatuses.length === 0) {
-      return isSearchActive ? rows : [];
+      return rows;
     }
 
     const selectedStatusValues = selectedStatuses.map((s) => s.value);
@@ -90,7 +91,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         }
 
         const urgentCount = filteredOrders.filter(
-          (order) => order.priority === 'Urgent',
+          (order) => order.priority === ORDER_PRIORITY.STAT,
         ).length;
 
         return {
@@ -101,7 +102,9 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         };
       })
       .filter((row): row is PatientOrderRow => row !== null);
-  }, [rows, selectedStatuses, searchTerm]);
+  };
+
+  const displayRows = getFilteredRows();
 
   const totalNewOrdersCount = useMemo(
     () => rows.reduce((sum, row) => sum + row.recentOrdersCount, 0),
@@ -238,7 +241,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     return (
       <ExpandableSortableDataTable
         headers={customHeaders}
-        rows={rows.map((row) => ({ ...row, isExpandable: false }))}
+        rows={displayRows.map((row) => ({ ...row, isExpandable: false }))}
         ariaLabel={t('ORDERS_FULFILLMENT_TABLE')}
         renderCell={renderCell}
         renderExpandedContent={renderExpandedContent}
@@ -252,7 +255,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   return (
     <ExpandableSortableDataTable
       headers={customHeaders}
-      rows={filteredRows}
+      rows={displayRows}
       ariaLabel={t('ORDERS_FULFILLMENT_TABLE')}
       renderCell={renderCell}
       renderExpandedContent={renderExpandedContent}
