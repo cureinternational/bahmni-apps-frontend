@@ -59,7 +59,8 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       setSelectedStatuses([]);
     } else {
       setSelectedStatuses(
-        (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
+        (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ??
+          [],
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
