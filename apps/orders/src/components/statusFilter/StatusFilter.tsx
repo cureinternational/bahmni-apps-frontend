@@ -12,7 +12,7 @@ interface StatusFilterProps {
   onApply: (selectedStatuses: OrderStatusConfig[]) => void;
   isOpen: boolean;
   onToggle: () => void;
-  anchorRef: React.RefObject<HTMLElement>;
+  anchorRef: React.RefObject<HTMLElement | null>;
 }
 
 export const StatusFilter: React.FC<StatusFilterProps> = ({

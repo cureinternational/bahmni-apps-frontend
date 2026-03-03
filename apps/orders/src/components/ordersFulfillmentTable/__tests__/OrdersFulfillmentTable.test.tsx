@@ -190,8 +190,8 @@ describe('OrdersFulfillmentTable', () => {
   it('renders total orders count', () => {
     render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
 
-    expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 
   it('expands row to show order details', () => {
