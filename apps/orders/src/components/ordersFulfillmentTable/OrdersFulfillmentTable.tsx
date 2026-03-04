@@ -120,7 +120,11 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       if (h.key === 'badge' && totalNewOrdersCount > 0) {
         return {
           ...h,
-          header: <NewBadge count={totalNewOrdersCount} />,
+          header: (
+            <div className={styles.centerAlignText}>
+              <NewBadge count={totalNewOrdersCount} />
+            </div>
+          ),
         };
       }
       if (h.key === 'status') {
@@ -174,7 +178,9 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     switch (cellId) {
       case 'badge':
         return row.recentOrdersCount > 0 ? (
-          <NewBadge count={row.recentOrdersCount} />
+          <div className={styles.centerAlignText}>
+            <NewBadge count={row.recentOrdersCount} />
+          </div>
         ) : null;
       case 'identifier':
         return (
