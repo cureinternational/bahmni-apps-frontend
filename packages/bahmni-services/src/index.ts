@@ -220,7 +220,9 @@ export {
   getActiveVisit,
   shouldEnableEncounterFilter,
   getFormsDataByEncounterUuid,
+  createOrderFulfillmentEncounter,
   type FormsEncounter,
+  type OrderFulfillmentEncounterParams,
 } from './encounterService';
 
 export {
@@ -306,4 +308,8 @@ export {
 } from './events/consultationEvents';
 
 export * from './orders';
-export { createTask, type CreateTaskPayload } from './taskService';
+export {
+  createTask,
+  type CreateTaskPayload,
+  type CreateTaskOptions,
+} from './taskService';

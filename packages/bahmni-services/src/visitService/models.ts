@@ -17,6 +17,10 @@ export interface VisitLocationResponse {
   uuid: string;
 }
 
+export interface ActiveVisitResult {
+  uuid: string;
+}
+
 export interface ActiveVisit {
-  results: string[];
+  results: ActiveVisitResult[];
 }
