@@ -12,7 +12,7 @@ import {
   DataTableSkeleton,
 } from '@carbon/react';
 import classnames from 'classnames';
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styles from './styles/ExpandableSortableDataTable.module.scss';
 
 interface ExpandableSortableDataTableProps<
@@ -29,6 +29,7 @@ interface ExpandableSortableDataTableProps<
   renderExpandedContent: (row: T) => React.ReactNode;
   expandedRowClassName?: string;
   className?: string;
+  showExpandAll?: boolean;
 }
 
 export const ExpandableSortableDataTable = <
@@ -50,8 +51,36 @@ export const ExpandableSortableDataTable = <
   renderExpandedContent,
   expandedRowClassName = '',
   className = 'expandable-sortable-data-table',
+  showExpandAll = true,
 }: ExpandableSortableDataTableProps<T>) => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const expandableRowIds = useMemo(
+    () =>
+      rows ? rows.filter((r) => r.isExpandable !== false).map((r) => r.id) : [],
+    [rows],
+  );
+
+  const rowIds = useMemo(
+    () => (rows ? rows.map((r) => r.id).join(',') : ''),
+    [rows],
+  );
+
+  useEffect(() => {
+    setExpandedRows(new Set());
+  }, [rowIds]);
+
+  const isAllExpanded =
+    expandableRowIds.length > 0 &&
+    expandableRowIds.every((id) => expandedRows.has(id));
+
+  const toggleExpandAll = () => {
+    if (isAllExpanded) {
+      setExpandedRows(new Set());
+    } else {
+      setExpandedRows(new Set(expandableRowIds));
+    }
+  };
 
   const toggleExpand = (rowId: string) => {
     setExpandedRows((prev) => {
@@ -129,7 +158,18 @@ export const ExpandableSortableDataTable = <
           <Table {...getTableProps()} aria-label={ariaLabel} size="md">
             <TableHead>
               <TableRow>
-                <TableExpandHeader aria-label="Expand row" />
+                {showExpandAll ? (
+                  <TableExpandHeader
+                    aria-label={
+                      isAllExpanded ? 'Collapse all rows' : 'Expand all rows'
+                    }
+                    enableToggle
+                    isExpanded={isAllExpanded}
+                    onExpand={toggleExpandAll}
+                  />
+                ) : (
+                  <TableExpandHeader aria-label="Expand row" />
+                )}
                 {tableHeaders.map((header) => {
                   const isSortable =
                     sortable.find((s) => s.key === header.key)?.sortable ??
