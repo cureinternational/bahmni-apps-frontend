@@ -163,6 +163,7 @@ export const ExpandableSortableDataTable = <
                     <TableExpandRow
                       {...rowProps}
                       key={row.id}
+                      isExpanded={isRowExpandable ? rowProps.isExpanded : false}
                       onExpand={isRowExpandable ? rowProps.onExpand : undefined}
                       aria-label={`Expand row ${row.id}`}
                       className={classnames({

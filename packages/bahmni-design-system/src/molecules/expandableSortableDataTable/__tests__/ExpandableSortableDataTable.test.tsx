@@ -523,8 +523,13 @@ describe('ExpandableSortableDataTable', () => {
       expect(screen.getByTestId('expanded-row-1')).toBeInTheDocument();
       expect(screen.getByTestId('expanded-row-2')).toBeInTheDocument();
 
-      // row-3 has isExpandable: false, should never be expanded
+      // row-3 has isExpandable: false, should not be expanded
       expect(screen.queryByTestId('expanded-row-3')).not.toBeInTheDocument();
+      // row-3's expand button should remain in collapsed visual state (aria-expanded=false)
+      const row3Button = screen.getAllByRole('button', {
+        name: /expand row row-3/i,
+      })[0];
+      expect(row3Button).toHaveAttribute('aria-expanded', 'false');
     });
 
     it('does not render expand-all button when showExpandAll is false', () => {
