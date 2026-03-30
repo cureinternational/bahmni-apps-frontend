@@ -138,6 +138,7 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with expanded ro
               scope="col"
             >
               <button
+                aria-controls="expanded-row-row-1 expanded-row-row-2 expanded-row-row-3"
                 aria-expanded="false"
                 aria-label="Expand all rows"
                 class="cds--table-expand__button"
@@ -505,6 +506,7 @@ exports[`ExpandableSortableDataTable Snapshots matches snapshot with full data 1
               scope="col"
             >
               <button
+                aria-controls="expanded-row-row-1 expanded-row-row-2 expanded-row-row-3"
                 aria-expanded="false"
                 aria-label="Expand all rows"
                 class="cds--table-expand__button"
