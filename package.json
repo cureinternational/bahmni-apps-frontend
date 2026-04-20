@@ -98,6 +98,9 @@
     "webpack-pwa-manifest": "^4.3.0",
     "workbox-webpack-plugin": "^7.0.0"
   },
+  "resolutions": {
+    "axios": "^1.15.0"
+  },
   "workspaces": [
     "apps/*",
     "packages/*",
