@@ -23,6 +23,8 @@ import { PriorityBadge } from '../priorityBadge';
 import { StatusFilter } from '../statusFilter';
 import customOrderTableStyles from './styles/CustomOrderTable.module.scss';
 import styles from './styles/OrdersFulfillmentTable.module.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBed } from '@fortawesome/free-solid-svg-icons'
 
 interface OrdersFulfillmentTableProps {
   rows: PatientOrderRow[];
@@ -299,6 +301,12 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         );
       case 'ordersPending':
         return row.totalOrdersCount;
+      case 'hasBeenAdmitted':
+        return (
+          <span className={row.hasBeenAdmitted ? styles.ipdBedIndication : "" }>
+            {row.hasBeenAdmitted ? <FontAwesomeIcon icon={faBed} data-testid={"bed-icon"}/> : ""}
+          </span>
+        );
       case 'priority':
         return (
           <div className={styles.priorityCell}>
