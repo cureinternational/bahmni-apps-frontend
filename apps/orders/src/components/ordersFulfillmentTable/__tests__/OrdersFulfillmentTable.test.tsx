@@ -73,7 +73,7 @@ const mockRows: PatientOrderRow[] = [
         provider: 'Mike Ronoh',
         dateTime: '12 Nov 25 04:24 PM',
         owner: null,
-        patientUuid: "uuid#1",
+        patientUuid: 'uuid#1',
       },
       {
         id: 'order-1-2',
@@ -84,7 +84,7 @@ const mockRows: PatientOrderRow[] = [
         provider: 'Mike Ronoh',
         dateTime: '12 Nov 25 04:24 PM',
         owner: 'Ted Okatch',
-        patientUuid: "uuid#2",
+        patientUuid: 'uuid#2',
       },
     ],
   },
@@ -107,7 +107,7 @@ const mockRows: PatientOrderRow[] = [
         provider: 'Sarah Kimani',
         dateTime: '12 Nov 25 03:15 PM',
         owner: 'Jane Wanjiku',
-        patientUuid: "uuid#3",
+        patientUuid: 'uuid#3',
       },
     ],
   },
@@ -202,13 +202,17 @@ describe('OrdersFulfillmentTable', () => {
   });
 
   it('renders admitted column with Yes for admitted patients', () => {
-    render(<OrdersFulfillmentTable rows={[mockRows[0]]} headers={mockHeaders} />);
+    render(
+      <OrdersFulfillmentTable rows={[mockRows[0]]} headers={mockHeaders} />,
+    );
 
     expect(screen.getByTestId('bed-icon')).toBeInTheDocument();
   });
 
   it('renders admitted column with No for non-admitted patients', () => {
-    render(<OrdersFulfillmentTable rows={[mockRows[1]]} headers={mockHeaders} />);
+    render(
+      <OrdersFulfillmentTable rows={[mockRows[1]]} headers={mockHeaders} />,
+    );
 
     expect(screen.queryByTestId('bed-icon')).not.toBeInTheDocument();
   });
