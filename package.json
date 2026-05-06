@@ -99,7 +99,7 @@
     "workbox-webpack-plugin": "^7.0.0"
   },
   "resolutions": {
-    "axios": "^1.15.0"
+    "axios": "^1.15.2"
   },
   "workspaces": [
     "apps/*",
