@@ -1,7 +1,9 @@
-import { Patient } from 'fhir/r4';
+import { differenceInDays, parseISO } from 'date-fns';
+import { Patient, Bundle, Observation } from 'fhir/r4';
 import { get, post } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { PatientSearchField } from '../configService/models/registrationConfig';
+import { OPENMRS_FHIR_R4 } from '../constants/app';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
@@ -23,6 +25,7 @@ import {
   GET_PATIENT_PROFILE_URL,
   PERSON_ATTRIBUTE_TYPES_URL,
   RELATIONSHIP_TYPES_URL,
+  LMP_CONCEPT_UUID,
 } from './constants';
 import {
   FormattedPatientData,
@@ -36,6 +39,7 @@ import {
   PatientProfileResponse,
   PersonAttributeTypesResponse,
   RelationshipTypesResponse,
+  LmpData,
 } from './models';
 
 export const getPatientById = async (patientUUID: string): Promise<Patient> => {
@@ -437,3 +441,71 @@ export const getPersonAttributeTypes =
   async (): Promise<PersonAttributeTypesResponse> => {
     return get<PersonAttributeTypesResponse>(PERSON_ATTRIBUTE_TYPES_URL);
   };
+
+/**
+ * Build FHIR R4 URL to fetch the most recent LMP observation for a patient
+ * @param patientUuid - The UUID of the patient
+ * @returns URL string for FHIR Observation query
+ */
+const getLmpObservationUrl = (patientUuid: string): string =>
+  `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&code=${encodeURIComponent(LMP_CONCEPT_UUID)}&_sort=-_lastUpdated&_count=1`;
+
+/**
+ * Calculate the number of days between an LMP date and today using date-fns
+ * @param lmpDateStr - ISO date string for the last menstrual period (e.g. "2024-03-15")
+ * @returns Number of days since LMP, or null if the date is invalid
+ */
+export const calculateDaysSinceLmp = (lmpDateStr: string): number | null => {
+  if (!lmpDateStr) return null;
+  try {
+    const lmpDate = parseISO(lmpDateStr);
+    const daysDiff = differenceInDays(new Date(), lmpDate);
+    return daysDiff >= 0 ? daysDiff : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Fetch the most recent LMP (Last Menstrual Period) observation for a patient
+ * Uses FHIR R4 Observation API filtered by the LMP concept
+ * @param patientUuid - The UUID of the patient
+ * @returns Promise<LmpData | null> - LMP date and days since LMP, or null if not captured
+ */
+export const getPatientLmpData = async (
+  patientUuid: string,
+): Promise<LmpData | null> => {
+  if (!patientUuid || patientUuid.trim() === '') {
+    return null;
+  }
+
+  try {
+    const bundle = await get<Bundle<Observation>>(
+      getLmpObservationUrl(patientUuid),
+    );
+    const observations =
+      bundle.entry
+        ?.filter((entry) => entry.resource?.resourceType === 'Observation')
+        .map((entry) => entry.resource as Observation) ?? [];
+
+    if (observations.length === 0) {
+      return null;
+    }
+
+    // Use the most recent observation (results are sorted by -_lastUpdated)
+    const lmpObs = observations[0];
+    const lmpDateStr =
+      lmpObs.valueDateTime ?? lmpObs.valueDate ?? lmpObs.valueString ?? null;
+
+    if (!lmpDateStr) return null;
+
+    // Normalise to YYYY-MM-DD
+    const isoDateStr = lmpDateStr.split('T')[0];
+    const daysSinceLmp = calculateDaysSinceLmp(isoDateStr);
+    if (daysSinceLmp === null) return null;
+
+    return { lmpDate: isoDateStr, daysSinceLmp };
+  } catch {
+    return null;
+  }
+};
