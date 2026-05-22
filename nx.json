@@ -17,9 +17,6 @@
   "sync": {
     "applyChanges": true
   },
-  "affected": {
-    "defaultBase": "cure-master"
-  },
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
