@@ -103,17 +103,15 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     }
   }, [tabLabel, providers]);
 
-  // Use prefetched LMP data from row expansion, or fall back to fetching when slider opens
   useEffect(() => {
     let isMounted = true;
 
     if (isOpen && isLmpEligible && order?.patientUuid) {
       if (prefetchedLmpData) {
-        // Data was already fetched when user expanded the row — no extra API call needed
         setLmpData(prefetchedLmpData.lmpData);
         setMenstruationStatus(prefetchedLmpData.menstruationStatus);
       } else {
-        // Fallback: fetch if row was not expanded first (e.g. direct deep link)
+        // Fallback: fetch if row was not expanded first (e.g., direct link to order)
         setLmpData(null);
         setMenstruationStatus(null);
         Promise.all([

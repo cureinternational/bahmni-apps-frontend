@@ -355,8 +355,6 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       row.orders[0]?.patient?.age,
     );
 
-    // Fetch LMP data once on first expand for Radiology tab orders (only for eligible patients)
-    // setTimeout defers the async call outside the render cycle
     if (
       isRadiologyTab &&
       patientUuid &&
@@ -364,6 +362,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       !fetchedPatientUuids.current.has(patientUuid)
     ) {
       fetchedPatientUuids.current.add(patientUuid);
+      // Defer async call outside render cycle
       setTimeout(() => {
         Promise.all([
           getPatientMenstruationStatus(patientUuid),
