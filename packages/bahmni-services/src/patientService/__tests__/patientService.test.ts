@@ -1754,17 +1754,12 @@ describe('Patient Service', () => {
     });
 
     it('should fetch and return LMP data successfully', async () => {
-      const mockBundle = {
-        entry: [
-          {
-            resource: {
-              resourceType: 'Observation',
-              valueDateTime: '2025-01-15T08:30:00',
-            },
-          },
-        ],
-      };
-      mockedGet.mockResolvedValueOnce(mockBundle);
+      const mockObservations = [
+        {
+          value: '2025-01-15T08:30:00',
+        },
+      ];
+      mockedGet.mockResolvedValueOnce(mockObservations);
 
       const result = await getPatientLmpData(patientUuid);
 
@@ -1774,8 +1769,8 @@ describe('Patient Service', () => {
       });
     });
 
-    it('should return null when no LMP data found (empty bundle)', async () => {
-      mockedGet.mockResolvedValueOnce({ entry: [] });
+    it('should return null when no LMP data found (empty observations)', async () => {
+      mockedGet.mockResolvedValueOnce([]);
 
       const result = await getPatientLmpData(patientUuid);
 
@@ -1799,34 +1794,24 @@ describe('Patient Service', () => {
       expect(result).toBeNull();
     });
 
-    it('should handle both valueDateTime and valueString formats', async () => {
-      const mockBundleDateTime = {
-        entry: [
-          {
-            resource: {
-              resourceType: 'Observation',
-              valueDateTime: '2025-01-15',
-            },
-          },
-        ],
-      };
-      mockedGet.mockResolvedValueOnce(mockBundleDateTime);
+    it('should handle both value and valueAsString formats', async () => {
+      const mockObservationsValue = [
+        {
+          value: '2025-01-15',
+        },
+      ];
+      mockedGet.mockResolvedValueOnce(mockObservationsValue);
 
       const result1 = await getPatientLmpData(patientUuid);
 
       expect(result1?.lmpDate).toBe('2025-01-15');
 
-      const mockBundleString = {
-        entry: [
-          {
-            resource: {
-              resourceType: 'Observation',
-              valueString: '2025-01-10',
-            },
-          },
-        ],
-      };
-      mockedGet.mockResolvedValueOnce(mockBundleString);
+      const mockObservationsValueAsString = [
+        {
+          valueAsString: '2025-01-10',
+        },
+      ];
+      mockedGet.mockResolvedValueOnce(mockObservationsValueAsString);
 
       const result2 = await getPatientLmpData(patientUuid);
 

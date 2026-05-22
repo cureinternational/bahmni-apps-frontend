@@ -16,6 +16,7 @@ export {
   getRelationshipTypes,
   getPersonAttributeTypes,
   getPatientLmpData,
+  getPatientMenstruationStatus,
   calculateDaysSinceLmp,
 } from './patientService';
 export {

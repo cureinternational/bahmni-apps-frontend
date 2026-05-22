@@ -5,6 +5,7 @@ import {
   createTask,
   getCurrentProvider,
   getPatientLmpData,
+  getPatientMenstruationStatus,
   LmpData,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
@@ -27,6 +28,7 @@ import {
   OrderStatusConfig,
 } from '../../models/orderFulfillment';
 import useOrdersStore from '../../stores/ordersStore';
+import { isPatientLmpEligible } from '../../utils/lmpEligibility';
 import styles from './styles/OrderFulfillmentSlider.module.scss';
 
 interface OrderFulfillmentSliderProps {
@@ -35,6 +37,10 @@ interface OrderFulfillmentSliderProps {
   isOpen: boolean;
   tabLabel?: string;
   onSaveSuccess?: () => void;
+  prefetchedLmpData?: {
+    lmpData: LmpData | null;
+    menstruationStatus: string | null;
+  } | null;
 }
 
 export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
@@ -43,6 +49,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   isOpen,
   tabLabel = '',
   onSaveSuccess,
+  prefetchedLmpData = null,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -55,8 +62,14 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
   const [lmpData, setLmpData] = useState<LmpData | null>(null);
+  const [menstruationStatus, setMenstruationStatus] = useState<string | null>(
+    null,
+  );
 
   const isRadiologyTab = tabLabel === RADIOLOGY_TAB_LABEL;
+  const isLmpEligible =
+    isRadiologyTab &&
+    isPatientLmpEligible(order?.patient?.gender, order?.patient?.age);
 
   const availableStatuses: OrderStatusConfig[] = (
     (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
@@ -90,24 +103,45 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     }
   }, [tabLabel, providers]);
 
+  // Use prefetched LMP data from row expansion, or fall back to fetching when slider opens
   useEffect(() => {
     let isMounted = true;
 
-    if (isOpen && isRadiologyTab && order?.patientUuid) {
-      setLmpData(null);
-      getPatientLmpData(order.patientUuid).then((data) => {
-        if (isMounted) {
-          setLmpData(data);
-        }
-      });
+    if (isOpen && isLmpEligible && order?.patientUuid) {
+      if (prefetchedLmpData) {
+        // Data was already fetched when user expanded the row — no extra API call needed
+        setLmpData(prefetchedLmpData.lmpData);
+        setMenstruationStatus(prefetchedLmpData.menstruationStatus);
+      } else {
+        // Fallback: fetch if row was not expanded first (e.g. direct deep link)
+        setLmpData(null);
+        setMenstruationStatus(null);
+        Promise.all([
+          getPatientMenstruationStatus(order.patientUuid),
+          getPatientLmpData(order.patientUuid),
+        ])
+          .then(([status, data]) => {
+            if (isMounted) {
+              setMenstruationStatus(status);
+              setLmpData(data);
+            }
+          })
+          .catch(() => {
+            if (isMounted) {
+              setMenstruationStatus(null);
+              setLmpData(null);
+            }
+          });
+      }
     } else if (!isOpen) {
       setLmpData(null);
+      setMenstruationStatus(null);
     }
 
     return () => {
       isMounted = false;
     };
-  }, [isOpen, isRadiologyTab, order?.patientUuid]);
+  }, [isOpen, isLmpEligible, order?.patientUuid, prefetchedLmpData]);
 
   const getNestedValue = (obj: Order, key: string): string => {
     const keys = key.split('.');
@@ -207,8 +241,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           </section>
         )}
 
-        {(patientDetailFields.length > 0 ||
-          (isRadiologyTab && lmpData !== null)) && (
+        {(patientDetailFields.length > 0 || isRadiologyTab) && (
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>{t('PATIENT_DETAILS')}</h3>
             <div className={styles.patientDetailsGrid}>
@@ -223,7 +256,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   </div>
                 );
               })}
-              {isRadiologyTab && lmpData && (
+              {isLmpEligible && (
                 <div
                   className={styles.patientDetailItem}
                   data-testid="lmp-days-display"
@@ -231,13 +264,21 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   <span className={styles.label}>{t('DAYS_SINCE_LMP')}</span>
                   <span
                     className={`${styles.value} ${
+                      menstruationStatus === 'Yes' &&
+                      lmpData &&
                       lmpData.daysSinceLmp > LMP_WARNING_DAYS_THRESHOLD
                         ? styles.lmpWarning
-                        : ''
+                        : menstruationStatus === null
+                          ? styles.lmpNotRecorded
+                          : ''
                     }`}
                     data-testid="lmp-days-value"
                   >
-                    {lmpData.daysSinceLmp}
+                    {menstruationStatus === 'Yes' && lmpData
+                      ? lmpData.daysSinceLmp
+                      : menstruationStatus === 'No'
+                        ? 'Not yet menstruating'
+                        : 'LMP date not recorded'}
                   </span>
                 </div>
               )}

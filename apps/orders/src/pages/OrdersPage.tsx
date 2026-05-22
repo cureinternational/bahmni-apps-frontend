@@ -7,7 +7,7 @@ import {
   Loading,
   Search,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, LmpData } from '@bahmni/services';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
@@ -29,6 +29,11 @@ interface OrdersTabContentProps {
     rows: PatientOrderRow[],
     tabLabel: string,
   ) => void;
+  onPatientExpand: (
+    patientUuid: string,
+    lmpData: LmpData | null,
+    menstruationStatus: string | null,
+  ) => void;
 }
 
 const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
@@ -37,6 +42,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
   contentScrollRef,
   isSliderOpen,
   onOrderClick,
+  onPatientExpand,
 }) => {
   const { t } = useTranslation();
   const { headers, isLoading, isCustomOrderTab } = useOrdersFulfillment(view);
@@ -126,6 +132,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           contentScrollRef={contentScrollRef}
           onOrderClick={handleOrderClick}
           searchTerm={searchInput}
+          onPatientExpand={onPatientExpand}
         />
       </div>
     </div>
@@ -148,6 +155,21 @@ export const OrdersPage: React.FC = () => {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
   const contentScrollRef = useRef<HTMLDivElement>(null);
+  // Store prefetched LMP data keyed by patientUuid — populated on row expand
+  const prefetchedLmpData = useRef<
+    Record<
+      string,
+      { lmpData: LmpData | null; menstruationStatus: string | null }
+    >
+  >({});
+
+  const handlePatientExpand = (
+    patientUuid: string,
+    lmpData: LmpData | null,
+    menstruationStatus: string | null,
+  ) => {
+    prefetchedLmpData.current[patientUuid] = { lmpData, menstruationStatus };
+  };
 
   const handleOrderClick = (
     orderId: string,
@@ -171,7 +193,10 @@ export const OrdersPage: React.FC = () => {
     fetchOrdersForTab(selectedIndex);
     setIsSliderOpen(false);
     setSelectedOrder(null);
+    // Clear prefetch cache when switching tabs
+    prefetchedLmpData.current = {};
   }, [selectedIndex, fetchOrdersForTab]);
+
   const handleCloseSlider = () => {
     setIsSliderOpen(false);
     setSelectedOrder(null);
@@ -229,6 +254,7 @@ export const OrdersPage: React.FC = () => {
                         contentScrollRef={contentScrollRef}
                         isSliderOpen={isSliderOpen}
                         onOrderClick={handleOrderClick}
+                        onPatientExpand={handlePatientExpand}
                       />
                     )}
                   </TabPanel>
@@ -245,6 +271,12 @@ export const OrdersPage: React.FC = () => {
               onClose={handleCloseSlider}
               tabLabel={selectedTabLabel}
               onSaveSuccess={handleSaveSuccess}
+              prefetchedLmpData={
+                selectedOrder
+                  ? (prefetchedLmpData.current[selectedOrder.patientUuid] ??
+                    null)
+                  : null
+              }
             />
           </div>
         )}

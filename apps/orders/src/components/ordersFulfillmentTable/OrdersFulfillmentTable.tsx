@@ -1,5 +1,10 @@
 import { ExpandableSortableDataTable } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import {
+  useTranslation,
+  getPatientLmpData,
+  getPatientMenstruationStatus,
+  LmpData,
+} from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
 import { faBed } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -11,6 +16,7 @@ import React, {
   Fragment,
   useEffect,
 } from 'react';
+import { RADIOLOGY_TAB_LABEL } from '../../constants/app';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import {
   PatientOrderRow,
@@ -18,6 +24,7 @@ import {
 } from '../../models/orderFulfillment';
 import { ORDER_PRIORITY } from '../../models/ordersConfig';
 import useOrdersStore from '../../stores/ordersStore';
+import { isPatientLmpEligible } from '../../utils/lmpEligibility';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import LinkButton from '../linkButton/LinkButton';
 import { NewBadge } from '../newBadge';
@@ -35,6 +42,11 @@ interface OrdersFulfillmentTableProps {
   contentScrollRef?: React.RefObject<HTMLDivElement | null>;
   onOrderClick?: (orderId: string) => void;
   searchTerm?: string;
+  onPatientExpand?: (
+    patientUuid: string,
+    lmpData: LmpData | null,
+    menstruationStatus: string | null,
+  ) => void;
 }
 
 export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
@@ -46,6 +58,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   contentScrollRef,
   onOrderClick,
   searchTerm = '',
+  onPatientExpand,
 }) => {
   const { t } = useTranslation();
   const { ordersTableConfig, tabs } = useOrdersConfig();
@@ -57,6 +70,8 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
+  // Track patients whose LMP data has already been fetched to avoid duplicate calls
+  const fetchedPatientUuids = useRef<Set<string>>(new Set());
 
   const [selectedStatuses, setSelectedStatuses] = useState<OrderStatusConfig[]>(
     (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
@@ -330,22 +345,56 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     }
   };
 
-  const renderExpandedContent = (row: PatientOrderRow) => (
-    <Fragment>
-      {row.orders.map((order) => (
-        <ExpandedOrderRow
-          key={order.id}
-          order={order}
-          isSelected={selectedOrderId === order.id}
-          onOrderClick={(orderId) => {
-            captureSelectedOrderRowPosition(orderId);
-            setSelectedOrderId(orderId);
-            onOrderClick?.(orderId);
-          }}
-        />
-      ))}
-    </Fragment>
-  );
+  const renderExpandedContent = (row: PatientOrderRow) => {
+    const isRadiologyTab =
+      tabs && tabs[selectedIndex]?.label === RADIOLOGY_TAB_LABEL;
+    const patientUuid = row.orders[0]?.patientUuid;
+
+    const isLmpEligiblePatient = isPatientLmpEligible(
+      row.orders[0]?.patient?.gender,
+      row.orders[0]?.patient?.age,
+    );
+
+    // Fetch LMP data once on first expand for Radiology tab orders (only for eligible patients)
+    // setTimeout defers the async call outside the render cycle
+    if (
+      isRadiologyTab &&
+      patientUuid &&
+      isLmpEligiblePatient &&
+      !fetchedPatientUuids.current.has(patientUuid)
+    ) {
+      fetchedPatientUuids.current.add(patientUuid);
+      setTimeout(() => {
+        Promise.all([
+          getPatientMenstruationStatus(patientUuid),
+          getPatientLmpData(patientUuid),
+        ])
+          .then(([menstruationStatus, lmpData]) => {
+            onPatientExpand?.(patientUuid, lmpData, menstruationStatus);
+          })
+          .catch(() => {
+            onPatientExpand?.(patientUuid, null, null);
+          });
+      }, 0);
+    }
+
+    return (
+      <Fragment>
+        {row.orders.map((order) => (
+          <ExpandedOrderRow
+            key={order.id}
+            order={order}
+            isSelected={selectedOrderId === order.id}
+            onOrderClick={(orderId) => {
+              captureSelectedOrderRowPosition(orderId);
+              setSelectedOrderId(orderId);
+              onOrderClick?.(orderId);
+            }}
+          />
+        ))}
+      </Fragment>
+    );
+  };
 
   if (isCustomOrderTab) {
     return (

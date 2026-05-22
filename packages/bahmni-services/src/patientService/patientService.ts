@@ -1,9 +1,9 @@
 import { differenceInDays, parseISO } from 'date-fns';
-import { Patient, Bundle, Observation } from 'fhir/r4';
+import { Patient } from 'fhir/r4';
 import { get, post } from '../api';
 import { APP_PROPERTY_URL } from '../applicationConfigService/constants';
 import { PatientSearchField } from '../configService/models/registrationConfig';
-import { OPENMRS_FHIR_R4 } from '../constants/app';
+import { OPENMRS_REST_V1 } from '../constants/app';
 import { calculateAge } from '../date';
 import { getUserLoginLocation } from '../userService';
 import { blobToDataUrl } from '../utils';
@@ -25,7 +25,7 @@ import {
   GET_PATIENT_PROFILE_URL,
   PERSON_ATTRIBUTE_TYPES_URL,
   RELATIONSHIP_TYPES_URL,
-  LMP_CONCEPT_UUID,
+  LMP_CONCEPT_NAME,
 } from './constants';
 import {
   FormattedPatientData,
@@ -443,14 +443,6 @@ export const getPersonAttributeTypes =
   };
 
 /**
- * Build FHIR R4 URL to fetch the most recent LMP observation for a patient
- * @param patientUuid - The UUID of the patient
- * @returns URL string for FHIR Observation query
- */
-const getLmpObservationUrl = (patientUuid: string): string =>
-  `${OPENMRS_FHIR_R4}/Observation?patient=${patientUuid}&code=${encodeURIComponent(LMP_CONCEPT_UUID)}&_sort=-_lastUpdated&_count=1`;
-
-/**
  * Calculate the number of days between an LMP date and today using date-fns
  * @param lmpDateStr - ISO date string for the last menstrual period (e.g. "2024-03-15")
  * @returns Number of days since LMP, or null if the date is invalid
@@ -468,7 +460,8 @@ export const calculateDaysSinceLmp = (lmpDateStr: string): number | null => {
 
 /**
  * Fetch the most recent LMP (Last Menstrual Period) observation for a patient
- * Uses FHIR R4 Observation API filtered by the LMP concept
+ * Uses Bahmni REST API endpoint that accepts concept names directly
+ * Single API call to /bahmnicore/observations with concept name parameter
  * @param patientUuid - The UUID of the patient
  * @returns Promise<LmpData | null> - LMP date and days since LMP, or null if not captured
  */
@@ -480,22 +473,24 @@ export const getPatientLmpData = async (
   }
 
   try {
-    const bundle = await get<Bundle<Observation>>(
-      getLmpObservationUrl(patientUuid),
-    );
-    const observations =
-      bundle.entry
-        ?.filter((entry) => entry.resource?.resourceType === 'Observation')
-        .map((entry) => entry.resource as Observation) ?? [];
+    // Use Bahmni REST API that accepts concept names directly
+    // This is more efficient than FHIR as it handles concept lookup internally
+    const url = `${OPENMRS_REST_V1}/bahmnicore/observations?patientUuid=${patientUuid}&concept=${encodeURIComponent(LMP_CONCEPT_NAME)}&scope=latest`;
 
-    if (observations.length === 0) {
+    interface BahmniObservation {
+      value?: string | null;
+      valueAsString?: string | null;
+    }
+
+    const observations = await get<BahmniObservation[]>(url);
+
+    if (!observations || observations.length === 0) {
       return null;
     }
 
-    // Use the most recent observation (results are sorted by -_lastUpdated)
+    // Use the most recent observation (scope=latest ensures this)
     const lmpObs = observations[0];
-    const lmpDateStr =
-      lmpObs.valueDateTime ?? lmpObs.valueDate ?? lmpObs.valueString ?? null;
+    const lmpDateStr = lmpObs.value ?? lmpObs.valueAsString ?? null;
 
     if (!lmpDateStr) return null;
 
@@ -509,3 +504,59 @@ export const getPatientLmpData = async (
     return null;
   }
 };
+
+/**
+ * Fetch the menstruation status observation for a patient
+ * Returns the answer value for "Has the Patient begun Menstruating?" observation
+ * Possible values: "Yes", "No", or null if not recorded
+ * @param patientUuid - The UUID of the patient
+ * @returns Promise<string | null> - The menstruation status or null if not recorded
+ */
+export const getPatientMenstruationStatus = async (
+  patientUuid: string,
+): Promise<string | null> => {
+  if (!patientUuid || patientUuid.trim() === '') {
+    return null;
+  }
+
+  try {
+    // Query the "Has the Patient begun Menstruating?" concept
+    const url = `${OPENMRS_REST_V1}/bahmnicore/observations?patientUuid=${patientUuid}&concept=${encodeURIComponent('Has the Patient begun Menstruating?')}&scope=latest`;
+
+    interface ConceptAnswer {
+      name?: string;
+    }
+
+    interface BahmniObservation {
+      value?: ConceptAnswer | null;
+      valueAsString?: string | null;
+    }
+
+    const observations = await get<BahmniObservation[]>(url);
+
+    if (!observations || observations.length === 0) {
+      return null;
+    }
+
+    // Return the value (should be "Yes" or "No")
+    const statusObs = observations[0];
+    // value is an object with name property, so try that first, then fall back to valueAsString
+    return (
+      (statusObs.value &&
+      typeof statusObs.value === 'object' &&
+      'name' in statusObs.value
+        ? statusObs.value.name
+        : statusObs.valueAsString) ?? null
+    );
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Fetches both LMP Date and menstruation status observations in a single API call
+ * More efficient than making two separate API calls
+ * Returns an object with both lmpData and menstruationStatus
+ * @param patientUuid - The UUID of the patient
+ * @returns Promise with lmpData and menstruationStatus, or null values if not found
+ */

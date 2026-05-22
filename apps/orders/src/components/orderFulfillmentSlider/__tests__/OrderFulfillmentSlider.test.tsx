@@ -10,6 +10,7 @@ import { OrderFulfillmentSlider } from '../OrderFulfillmentSlider';
 const mockCreateTask = jest.fn();
 const mockGetCurrentProvider = jest.fn();
 const mockGetPatientLmpData = jest.fn();
+const mockGetPatientMenstruationStatus = jest.fn();
 
 jest.mock('@bahmni/services', () => ({
   useTranslation: () => ({
@@ -18,6 +19,8 @@ jest.mock('@bahmni/services', () => ({
   createTask: (...args: unknown[]) => mockCreateTask(...args),
   getCurrentProvider: (...args: unknown[]) => mockGetCurrentProvider(...args),
   getPatientLmpData: (...args: unknown[]) => mockGetPatientLmpData(...args),
+  getPatientMenstruationStatus: (...args: unknown[]) =>
+    mockGetPatientMenstruationStatus(...args),
 }));
 
 const mockAddNotification = jest.fn();
@@ -84,6 +87,27 @@ const mockOrder: Order = {
   },
 };
 
+// Mock order for LMP tests - must be female and >= 10 years old
+const mockRadiologyOrderEligibleForLmp: Order = {
+  id: 'order-1',
+  patientUuid: 'patient-uuid-1',
+  orderName: 'CT Brain',
+  orderType: 'Radiology Order',
+  priority: ORDER_PRIORITY.STAT,
+  status: 'New',
+  provider: 'Dr. Jane Smith',
+  dateTime: '12 Nov 25 04:24 PM',
+  owner: null,
+  providerComments: 'CT scan for headache assessment',
+  patient: {
+    age: '15 years 6 months 3 days',
+    dateOfBirth: '09 May 2009',
+    gender: 'F',
+    address: '456 Nairobi Ave, Kenya',
+    phoneNumber: '+254 700 987 654',
+  },
+};
+
 describe('OrderFulfillmentSlider', () => {
   const mockOnClose = jest.fn();
   const mockFetchProviders = jest.fn();
@@ -99,6 +123,7 @@ describe('OrderFulfillmentSlider', () => {
     jest.clearAllMocks();
     mockGetCurrentProvider.mockResolvedValue({ uuid: 'provider-uuid-1' });
     (mockGetPatientLmpData as jest.Mock).mockResolvedValue(null);
+    (mockGetPatientMenstruationStatus as jest.Mock).mockResolvedValue(null);
     (useOrdersStore as unknown as jest.Mock).mockReturnValue({
       fetchProviders: mockFetchProviders,
       providers: mockProviders,
@@ -1377,6 +1402,7 @@ describe('OrderFulfillmentSlider', () => {
   describe('LMP (Last Menstrual Period) Display', () => {
     it('fetches LMP data when radiology slider opens', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
+      mockGetPatientMenstruationStatus.mockResolvedValue('Yes');
       mockGetPatientLmpData.mockResolvedValue({
         lmpDate: '2024-01-15',
         daysSinceLmp: 30,
@@ -1384,7 +1410,7 @@ describe('OrderFulfillmentSlider', () => {
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1415,6 +1441,7 @@ describe('OrderFulfillmentSlider', () => {
 
     it('displays LMP days when lmpData is available for radiology tab', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
+      mockGetPatientMenstruationStatus.mockResolvedValue('Yes');
       mockGetPatientLmpData.mockResolvedValue({
         lmpDate: '2024-01-15',
         daysSinceLmp: 30,
@@ -1422,7 +1449,7 @@ describe('OrderFulfillmentSlider', () => {
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1437,6 +1464,7 @@ describe('OrderFulfillmentSlider', () => {
 
     it('applies red styling when daysSinceLmp > 28 (warning threshold)', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
+      mockGetPatientMenstruationStatus.mockResolvedValue('Yes');
       mockGetPatientLmpData.mockResolvedValue({
         lmpDate: '2024-01-10',
         daysSinceLmp: 29,
@@ -1444,7 +1472,7 @@ describe('OrderFulfillmentSlider', () => {
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1460,6 +1488,7 @@ describe('OrderFulfillmentSlider', () => {
 
     it('applies red styling when daysSinceLmp > 28', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
+      mockGetPatientMenstruationStatus.mockResolvedValue('Yes');
       mockGetPatientLmpData.mockResolvedValue({
         lmpDate: '2023-12-05',
         daysSinceLmp: 40,
@@ -1467,7 +1496,7 @@ describe('OrderFulfillmentSlider', () => {
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1482,6 +1511,7 @@ describe('OrderFulfillmentSlider', () => {
 
     it('does not apply red styling when daysSinceLmp <= 28', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
+      mockGetPatientMenstruationStatus.mockResolvedValue('Yes');
       mockGetPatientLmpData.mockResolvedValue({
         lmpDate: '2024-02-10',
         daysSinceLmp: 28,
@@ -1489,7 +1519,7 @@ describe('OrderFulfillmentSlider', () => {
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1503,13 +1533,14 @@ describe('OrderFulfillmentSlider', () => {
       });
     });
 
-    it('hides LMP section when lmpData is null (not captured)', async () => {
+    it('shows LMP section with "not recorded" message when lmpData is null', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
+      mockGetPatientMenstruationStatus.mockResolvedValue(null);
       mockGetPatientLmpData.mockResolvedValue(null);
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1517,9 +1548,10 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.queryByTestId('lmp-days-display'),
-        ).not.toBeInTheDocument();
+        expect(screen.getByTestId('lmp-days-display')).toBeInTheDocument();
+        expect(screen.getByTestId('lmp-days-value')).toHaveTextContent(
+          'LMP date not recorded',
+        );
       });
     });
 
@@ -1532,7 +1564,7 @@ describe('OrderFulfillmentSlider', () => {
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Lab Order"
@@ -1577,7 +1609,7 @@ describe('OrderFulfillmentSlider', () => {
 
       const { rerender } = renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1591,7 +1623,7 @@ describe('OrderFulfillmentSlider', () => {
       // Close slider
       rerender(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen={false}
           tabLabel="Radiology Order"
@@ -1611,7 +1643,7 @@ describe('OrderFulfillmentSlider', () => {
 
       const { rerender } = renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1625,7 +1657,7 @@ describe('OrderFulfillmentSlider', () => {
       // Close slider
       rerender(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen={false}
           tabLabel="Radiology Order"
@@ -1640,7 +1672,7 @@ describe('OrderFulfillmentSlider', () => {
 
       rerender(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1661,7 +1693,7 @@ describe('OrderFulfillmentSlider', () => {
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1675,11 +1707,12 @@ describe('OrderFulfillmentSlider', () => {
 
     it('handles LMP fetch returning null gracefully', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
+      mockGetPatientMenstruationStatus.mockResolvedValue(null);
       (mockGetPatientLmpData as jest.Mock).mockResolvedValue(null);
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1687,10 +1720,11 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       await waitFor(() => {
-        // Should not display LMP section when fetch returns null
-        expect(
-          screen.queryByTestId('lmp-days-display'),
-        ).not.toBeInTheDocument();
+        // Should display LMP section with "LMP date not recorded" message when both are null
+        expect(screen.getByTestId('lmp-days-display')).toBeInTheDocument();
+        expect(screen.getByTestId('lmp-days-value')).toHaveTextContent(
+          'LMP date not recorded',
+        );
       });
     });
 
@@ -1703,7 +1737,7 @@ describe('OrderFulfillmentSlider', () => {
 
       const { rerender } = renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1716,7 +1750,7 @@ describe('OrderFulfillmentSlider', () => {
 
       // Change order with different patientUuid
       const newOrder: Order = {
-        ...mockOrder,
+        ...mockRadiologyOrderEligibleForLmp,
         id: 'order-2',
         patientUuid: 'patient-uuid-2',
         orderName: 'New X-ray',
@@ -1749,6 +1783,7 @@ describe('OrderFulfillmentSlider', () => {
       useOrdersConfig.mockReturnValue(mockConfig);
 
       // Test boundary case: exactly at threshold (28 - should not show red, must be > 28)
+      mockGetPatientMenstruationStatus.mockResolvedValueOnce('Yes');
       (mockGetPatientLmpData as jest.Mock).mockResolvedValueOnce({
         lmpDate: '2024-01-10',
         daysSinceLmp: 28,
@@ -1756,7 +1791,7 @@ describe('OrderFulfillmentSlider', () => {
 
       const { rerender } = renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
@@ -1771,10 +1806,11 @@ describe('OrderFulfillmentSlider', () => {
 
       // Change order to trigger refetch with just above threshold (29)
       const newOrder: Order = {
-        ...mockOrder,
+        ...mockRadiologyOrderEligibleForLmp,
         id: 'order-2',
       };
 
+      mockGetPatientMenstruationStatus.mockResolvedValueOnce('Yes');
       (mockGetPatientLmpData as jest.Mock).mockResolvedValueOnce({
         lmpDate: '2024-01-09',
         daysSinceLmp: 29,
@@ -1805,7 +1841,7 @@ describe('OrderFulfillmentSlider', () => {
 
       renderWithIntl(
         <OrderFulfillmentSlider
-          order={mockOrder}
+          order={mockRadiologyOrderEligibleForLmp}
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"

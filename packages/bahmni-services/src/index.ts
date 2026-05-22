@@ -24,6 +24,7 @@ export {
   getPersonAttributeTypes,
   getRelationshipTypes,
   getPatientLmpData,
+  getPatientMenstruationStatus,
   calculateDaysSinceLmp,
   type FormattedPatientData,
   type PatientSearchResult,
