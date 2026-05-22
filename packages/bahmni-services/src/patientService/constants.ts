@@ -161,5 +161,3 @@ export const PATIENT_IMAGE_URL = (patientUuid: string) =>
 export const PERSON_ATTRIBUTE_TYPES_URL =
   OPENMRS_REST_V1 +
   '/personattributetype?v=custom:(uuid,name,sortWeight,description,format,concept:(uuid,display,answers:(uuid,name)))';
-
-export const LMP_CONCEPT_NAME = 'LMP Date';

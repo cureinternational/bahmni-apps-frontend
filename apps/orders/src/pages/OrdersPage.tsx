@@ -7,7 +7,7 @@ import {
   Loading,
   Search,
 } from '@bahmni/design-system';
-import { useTranslation, LmpData } from '@bahmni/services';
+import { useTranslation, ObservationData } from '@bahmni/services';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
@@ -31,8 +31,7 @@ interface OrdersTabContentProps {
   ) => void;
   onPatientExpand: (
     patientUuid: string,
-    lmpData: LmpData | null,
-    menstruationStatus: string | null,
+    observations: Record<string, ObservationData | string | null>,
   ) => void;
 }
 
@@ -155,20 +154,16 @@ export const OrdersPage: React.FC = () => {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
   const contentScrollRef = useRef<HTMLDivElement>(null);
-  // Store prefetched LMP data keyed by patientUuid — populated on row expand
-  const prefetchedLmpData = useRef<
-    Record<
-      string,
-      { lmpData: LmpData | null; menstruationStatus: string | null }
-    >
+  // Store prefetched observation data keyed by patientUuid — populated on row expand
+  const prefetchedObservations = useRef<
+    Record<string, Record<string, ObservationData | string | null>>
   >({});
 
   const handlePatientExpand = (
     patientUuid: string,
-    lmpData: LmpData | null,
-    menstruationStatus: string | null,
+    observations: Record<string, ObservationData | string | null>,
   ) => {
-    prefetchedLmpData.current[patientUuid] = { lmpData, menstruationStatus };
+    prefetchedObservations.current[patientUuid] = observations;
   };
 
   const handleOrderClick = (
@@ -194,7 +189,7 @@ export const OrdersPage: React.FC = () => {
     setIsSliderOpen(false);
     setSelectedOrder(null);
     // Clear prefetch cache when switching tabs
-    prefetchedLmpData.current = {};
+    prefetchedObservations.current = {};
   }, [selectedIndex, fetchOrdersForTab]);
 
   const handleCloseSlider = () => {
@@ -271,10 +266,11 @@ export const OrdersPage: React.FC = () => {
               onClose={handleCloseSlider}
               tabLabel={selectedTabLabel}
               onSaveSuccess={handleSaveSuccess}
-              prefetchedLmpData={
+              prefetchedObservations={
                 selectedOrder
-                  ? (prefetchedLmpData.current[selectedOrder.patientUuid] ??
-                    null)
+                  ? (prefetchedObservations.current[
+                      selectedOrder.patientUuid
+                    ] ?? null)
                   : null
               }
             />

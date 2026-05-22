@@ -405,7 +405,7 @@ export interface Relationship {
   resourceVersion?: string;
 }
 
-export interface LmpData {
-  lmpDate: string;
-  daysSinceLmp: number;
+export interface ObservationData {
+  date: string;
+  daysSince: number;
 }

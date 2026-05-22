@@ -19,6 +19,28 @@ export interface PatientDetailField {
 }
 
 /**
+ * Represents eligibility criteria for displaying observation fields in the order slider
+ */
+export interface SliderObservationEligibility {
+  gender?: string;
+  minAge?: number;
+}
+
+/**
+ * Represents a configurable observation field to display in the order fulfillment slider
+ */
+export interface SliderObservationField {
+  conceptName: string;
+  type: 'days_since_date' | 'text';
+  translationKey: string;
+  warningThreshold?: number;
+  conditionConceptName?: string;
+  conditionPositiveValue?: string;
+  eligibility?: SliderObservationEligibility;
+  tabLabels?: string[];
+}
+
+/**
  * Represents the orders table configuration from app.json
  * Contains table-specific settings like column configurations for default and drug orders
  */
@@ -29,4 +51,5 @@ export interface OrdersTableConfig {
   orderStatusesAvailable?: string[];
   orderStatusesPreSelected?: string[];
   fulfillmentEncounterTypeUuid?: string;
+  sliderObservationFields?: SliderObservationField[];
 }

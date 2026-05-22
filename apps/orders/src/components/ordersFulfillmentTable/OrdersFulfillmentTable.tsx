@@ -1,9 +1,8 @@
 import { ExpandableSortableDataTable } from '@bahmni/design-system';
 import {
   useTranslation,
-  getPatientLmpData,
-  getPatientMenstruationStatus,
-  LmpData,
+  getObservationByConceptName,
+  ObservationData,
 } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
 import { faBed } from '@fortawesome/free-solid-svg-icons';
@@ -16,7 +15,6 @@ import React, {
   Fragment,
   useEffect,
 } from 'react';
-import { RADIOLOGY_TAB_LABEL } from '../../constants/app';
 import { useOrdersConfig } from '../../hooks/useOrdersConfig';
 import {
   PatientOrderRow,
@@ -24,7 +22,7 @@ import {
 } from '../../models/orderFulfillment';
 import { ORDER_PRIORITY } from '../../models/ordersConfig';
 import useOrdersStore from '../../stores/ordersStore';
-import { isPatientLmpEligible } from '../../utils/lmpEligibility';
+import { parseAgeYears } from '../../utils/patientUtils';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import LinkButton from '../linkButton/LinkButton';
 import { NewBadge } from '../newBadge';
@@ -44,8 +42,7 @@ interface OrdersFulfillmentTableProps {
   searchTerm?: string;
   onPatientExpand?: (
     patientUuid: string,
-    lmpData: LmpData | null,
-    menstruationStatus: string | null,
+    observations: Record<string, ObservationData | string | null>,
   ) => void;
 }
 
@@ -346,33 +343,52 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   };
 
   const renderExpandedContent = (row: PatientOrderRow) => {
-    const isRadiologyTab =
-      tabs && tabs[selectedIndex]?.label === RADIOLOGY_TAB_LABEL;
+    const { sliderObservationFields = [] } = ordersTableConfig ?? {};
     const patientUuid = row.orders[0]?.patientUuid;
+    const patient = row.orders[0]?.patient;
+    const currentTabLabel = tabs?.[selectedIndex]?.label;
 
-    const isLmpEligiblePatient = isPatientLmpEligible(
-      row.orders[0]?.patient?.gender,
-      row.orders[0]?.patient?.age,
-    );
+    // Collect all concepts to fetch for eligible fields matching current tab
+    const conceptsToFetch = sliderObservationFields
+      .filter((field) => {
+        const tabMatch =
+          !field.tabLabels?.length || field.tabLabels.includes(currentTabLabel);
+        const genderMatch =
+          !field.eligibility?.gender ||
+          field.eligibility.gender === patient?.gender;
+        const ageMatch =
+          field.eligibility?.minAge == null ||
+          parseAgeYears(patient?.age) >= field.eligibility.minAge;
+        return tabMatch && genderMatch && ageMatch;
+      })
+      .flatMap(
+        (f) =>
+          [f.conceptName, f.conditionConceptName].filter(Boolean) as string[],
+      );
+
+    const uniqueConcepts = [...new Set(conceptsToFetch)];
 
     if (
-      isRadiologyTab &&
+      uniqueConcepts.length > 0 &&
       patientUuid &&
-      isLmpEligiblePatient &&
       !fetchedPatientUuids.current.has(patientUuid)
     ) {
       fetchedPatientUuids.current.add(patientUuid);
       // Defer async call outside render cycle
       setTimeout(() => {
-        Promise.all([
-          getPatientMenstruationStatus(patientUuid),
-          getPatientLmpData(patientUuid),
-        ])
-          .then(([menstruationStatus, lmpData]) => {
-            onPatientExpand?.(patientUuid, lmpData, menstruationStatus);
+        Promise.all(
+          uniqueConcepts.map((c) =>
+            getObservationByConceptName(patientUuid, c),
+          ),
+        )
+          .then((results) => {
+            const observations = Object.fromEntries(
+              uniqueConcepts.map((c, i) => [c, results[i]]),
+            );
+            onPatientExpand?.(patientUuid, observations);
           })
           .catch(() => {
-            onPatientExpand?.(patientUuid, null, null);
+            onPatientExpand?.(patientUuid, {});
           });
       }, 0);
     }

@@ -4,18 +4,13 @@ import {
   Provider,
   createTask,
   getCurrentProvider,
-  getPatientLmpData,
-  getPatientMenstruationStatus,
-  LmpData,
+  getObservationByConceptName,
+  ObservationData,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
 import { ComboBox, TextArea } from '@carbon/react';
 import React, { useEffect, useState } from 'react';
-import {
-  RADIOLOGY_TAB_LABEL,
-  LMP_WARNING_DAYS_THRESHOLD,
-} from '../../constants/app';
 import {
   UI_STATUS_TO_FHIR_TASK_STATUS,
   DEFAULT_STATUS_FOR_NEW_ORDER,
@@ -28,7 +23,7 @@ import {
   OrderStatusConfig,
 } from '../../models/orderFulfillment';
 import useOrdersStore from '../../stores/ordersStore';
-import { isPatientLmpEligible } from '../../utils/lmpEligibility';
+import { parseAgeYears } from '../../utils/patientUtils';
 import styles from './styles/OrderFulfillmentSlider.module.scss';
 
 interface OrderFulfillmentSliderProps {
@@ -37,10 +32,10 @@ interface OrderFulfillmentSliderProps {
   isOpen: boolean;
   tabLabel?: string;
   onSaveSuccess?: () => void;
-  prefetchedLmpData?: {
-    lmpData: LmpData | null;
-    menstruationStatus: string | null;
-  } | null;
+  prefetchedObservations?: Record<
+    string,
+    ObservationData | string | null
+  > | null;
 }
 
 export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
@@ -49,7 +44,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   isOpen,
   tabLabel = '',
   onSaveSuccess,
-  prefetchedLmpData = null,
+  prefetchedObservations = null,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -61,15 +56,23 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [owner, setOwner] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
-  const [lmpData, setLmpData] = useState<LmpData | null>(null);
-  const [menstruationStatus, setMenstruationStatus] = useState<string | null>(
-    null,
-  );
+  const [observationData, setObservationData] = useState<
+    Record<string, ObservationData | string | null>
+  >({});
 
-  const isRadiologyTab = tabLabel === RADIOLOGY_TAB_LABEL;
-  const isLmpEligible =
-    isRadiologyTab &&
-    isPatientLmpEligible(order?.patient?.gender, order?.patient?.age);
+  const { sliderObservationFields = [] } = ordersTableConfig ?? {};
+
+  const activeFields = sliderObservationFields.filter((field) => {
+    const tabMatch =
+      !field.tabLabels?.length || field.tabLabels.includes(tabLabel);
+    const genderMatch =
+      !field.eligibility?.gender ||
+      field.eligibility.gender === order?.patient?.gender;
+    const ageMatch =
+      field.eligibility?.minAge == null ||
+      parseAgeYears(order?.patient?.age) >= field.eligibility.minAge;
+    return tabMatch && genderMatch && ageMatch;
+  });
 
   const availableStatuses: OrderStatusConfig[] = (
     (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
@@ -106,40 +109,50 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   useEffect(() => {
     let isMounted = true;
 
-    if (isOpen && isLmpEligible && order?.patientUuid) {
-      if (prefetchedLmpData) {
-        setLmpData(prefetchedLmpData.lmpData);
-        setMenstruationStatus(prefetchedLmpData.menstruationStatus);
+    if (isOpen && activeFields.length > 0 && order?.patientUuid) {
+      if (prefetchedObservations) {
+        setObservationData(prefetchedObservations);
       } else {
         // Fallback: fetch if row was not expanded first (e.g., direct link to order)
-        setLmpData(null);
-        setMenstruationStatus(null);
-        Promise.all([
-          getPatientMenstruationStatus(order.patientUuid),
-          getPatientLmpData(order.patientUuid),
-        ])
-          .then(([status, data]) => {
+        setObservationData({});
+        const conceptsToFetch = [
+          ...new Set(
+            activeFields.flatMap(
+              (f) =>
+                [f.conceptName, f.conditionConceptName].filter(
+                  Boolean,
+                ) as string[],
+            ),
+          ),
+        ];
+        Promise.all(
+          conceptsToFetch.map((c) =>
+            getObservationByConceptName(order.patientUuid, c),
+          ),
+        )
+          .then((results) => {
             if (isMounted) {
-              setMenstruationStatus(status);
-              setLmpData(data);
+              setObservationData(
+                Object.fromEntries(
+                  conceptsToFetch.map((c, i) => [c, results[i]]),
+                ),
+              );
             }
           })
           .catch(() => {
             if (isMounted) {
-              setMenstruationStatus(null);
-              setLmpData(null);
+              setObservationData({});
             }
           });
       }
     } else if (!isOpen) {
-      setLmpData(null);
-      setMenstruationStatus(null);
+      setObservationData({});
     }
 
     return () => {
       isMounted = false;
     };
-  }, [isOpen, isLmpEligible, order?.patientUuid, prefetchedLmpData]);
+  }, [isOpen, order?.patientUuid, prefetchedObservations, activeFields.length]);
 
   const getNestedValue = (obj: Order, key: string): string => {
     const keys = key.split('.');
@@ -239,7 +252,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           </section>
         )}
 
-        {(patientDetailFields.length > 0 || isRadiologyTab) && (
+        {(patientDetailFields.length > 0 || activeFields.length > 0) && (
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>{t('PATIENT_DETAILS')}</h3>
             <div className={styles.patientDetailsGrid}>
@@ -254,32 +267,57 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   </div>
                 );
               })}
-              {isLmpEligible && (
-                <div
-                  className={styles.patientDetailItem}
-                  data-testid="lmp-days-display"
-                >
-                  <span className={styles.label}>{t('DAYS_SINCE_LMP')}</span>
-                  <span
-                    className={`${styles.value} ${
-                      menstruationStatus === 'Yes' &&
-                      lmpData &&
-                      lmpData.daysSinceLmp > LMP_WARNING_DAYS_THRESHOLD
-                        ? styles.lmpWarning
-                        : menstruationStatus === null
-                          ? styles.lmpNotRecorded
-                          : ''
-                    }`}
-                    data-testid="lmp-days-value"
-                  >
-                    {menstruationStatus === 'Yes' && lmpData
-                      ? lmpData.daysSinceLmp
-                      : menstruationStatus === 'No'
-                        ? 'Not yet menstruating'
-                        : 'LMP date not recorded'}
-                  </span>
-                </div>
-              )}
+              {activeFields.map((field) => {
+                if (field.type === 'days_since_date') {
+                  const dateObs = observationData[field.conceptName] as
+                    | typeof ObservationData
+                    | null
+                    | undefined;
+                  const conditionVal = field.conditionConceptName
+                    ? (observationData[field.conditionConceptName] as
+                        | string
+                        | null
+                        | undefined)
+                    : field.conditionPositiveValue;
+
+                  const isConditionMet =
+                    !field.conditionConceptName ||
+                    conditionVal === field.conditionPositiveValue;
+                  const isNotRecorded = dateObs == null;
+                  const isWarning =
+                    isConditionMet && dateObs && field.warningThreshold != null
+                      ? (dateObs as ObservationData).daysSince >
+                        field.warningThreshold
+                      : false;
+
+                  return (
+                    <div
+                      key={field.conceptName}
+                      className={styles.patientDetailItem}
+                      data-testid="observation-days-display"
+                    >
+                      <span className={styles.label}>
+                        {t(field.translationKey)}
+                      </span>
+                      <span
+                        className={`${styles.value} ${
+                          isWarning ? styles.observationWarning : ''
+                        } ${
+                          isNotRecorded ? styles.observationNotRecorded : ''
+                        }`}
+                        data-testid="observation-days-value"
+                      >
+                        {isConditionMet && dateObs
+                          ? (dateObs as ObservationData).daysSince
+                          : !isConditionMet && conditionVal != null
+                            ? t('OBSERVATION_CONDITION_NOT_MET')
+                            : t('OBSERVATION_NOT_RECORDED')}
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              })}
             </div>
           </section>
         )}
