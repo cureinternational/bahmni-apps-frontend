@@ -42,7 +42,7 @@ interface OrdersFulfillmentTableProps {
   searchTerm?: string;
   onPatientExpand?: (
     patientUuid: string,
-    observations: Record<string, ObservationData | string | null>,
+    lmpData: ObservationData | null,
   ) => void;
 }
 
@@ -343,52 +343,31 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   };
 
   const renderExpandedContent = (row: PatientOrderRow) => {
-    const { sliderObservationFields = [] } = ordersTableConfig ?? {};
+    const { lmpConfig } = ordersTableConfig ?? {};
     const patientUuid = row.orders[0]?.patientUuid;
     const patient = row.orders[0]?.patient;
     const currentTabLabel = tabs?.[selectedIndex]?.label;
 
-    // Collect all concepts to fetch for eligible fields matching current tab
-    const conceptsToFetch = sliderObservationFields
-      .filter((field) => {
-        const tabMatch =
-          !field.tabLabels?.length || field.tabLabels.includes(currentTabLabel);
-        const genderMatch =
-          !field.eligibility?.gender ||
-          field.eligibility.gender === patient?.gender;
-        const ageMatch =
-          field.eligibility?.minAge == null ||
-          parseAgeYears(patient?.age) >= field.eligibility.minAge;
-        return tabMatch && genderMatch && ageMatch;
-      })
-      .flatMap(
-        (f) =>
-          [f.conceptName, f.conditionConceptName].filter(Boolean) as string[],
-      );
-
-    const uniqueConcepts = [...new Set(conceptsToFetch)];
-
-    if (
-      uniqueConcepts.length > 0 &&
+    const shouldFetchLmp = !!(
+      lmpConfig &&
+      patient?.gender === 'F' &&
+      parseAgeYears(patient?.age) >= 10 &&
+      (!lmpConfig.tabLabels?.length ||
+        lmpConfig.tabLabels.includes(currentTabLabel)) &&
       patientUuid &&
       !fetchedPatientUuids.current.has(patientUuid)
-    ) {
+    );
+
+    if (shouldFetchLmp) {
       fetchedPatientUuids.current.add(patientUuid);
       // Defer async call outside render cycle
       setTimeout(() => {
-        Promise.all(
-          uniqueConcepts.map((c) =>
-            getObservationByConceptName(patientUuid, c),
-          ),
-        )
-          .then((results) => {
-            const observations = Object.fromEntries(
-              uniqueConcepts.map((c, i) => [c, results[i]]),
-            );
-            onPatientExpand?.(patientUuid, observations);
+        getObservationByConceptName(patientUuid!, lmpConfig!.lmpDateConcept)
+          .then((result) => {
+            onPatientExpand?.(patientUuid!, result as ObservationData | null);
           })
           .catch(() => {
-            onPatientExpand?.(patientUuid, {});
+            onPatientExpand?.(patientUuid!, null);
           });
       }, 0);
     }

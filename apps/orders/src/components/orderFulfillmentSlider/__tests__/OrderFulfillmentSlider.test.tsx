@@ -172,21 +172,11 @@ describe('OrderFulfillmentSlider', () => {
           translationKey: 'STATUS_IN_PROGRESS',
         },
       ],
-      sliderObservationFields: [
-        {
-          conceptName: 'LMP Date',
-          type: 'days_since_date',
-          translationKey: 'DAYS_SINCE_LMP',
-          warningThreshold: 28,
-          conditionConceptName: 'Has the Patient begun Menstruating?',
-          conditionPositiveValue: 'Yes',
-          eligibility: {
-            gender: 'F',
-            minAge: 10,
-          },
-          tabLabels: ['Radiology Order'],
-        },
-      ],
+      lmpConfig: {
+        lmpDateConcept: 'LMP Date',
+        threshold: 28,
+        tabLabels: ['Radiology Order'],
+      },
     },
   };
 
@@ -1414,16 +1404,10 @@ describe('OrderFulfillmentSlider', () => {
   describe('LMP (Last Menstrual Period) Display', () => {
     it('fetches observation data when radiology slider opens with config', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockImplementation(
-        (patientUuid: string, conceptName: string) => {
-          if (conceptName === 'LMP Date') {
-            return Promise.resolve({ date: '2024-01-15', daysSince: 30 });
-          } else if (conceptName === 'Has the Patient begun Menstruating?') {
-            return Promise.resolve('Yes');
-          }
-          return Promise.resolve(null);
-        },
-      );
+      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
+        date: '2024-01-15',
+        daysSince: 30,
+      });
 
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1461,16 +1445,10 @@ describe('OrderFulfillmentSlider', () => {
 
     it('displays observation days when data is available for radiology tab', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockImplementation(
-        (patientUuid: string, conceptName: string) => {
-          if (conceptName === 'LMP Date') {
-            return Promise.resolve({ date: '2024-01-15', daysSince: 30 });
-          } else if (conceptName === 'Has the Patient begun Menstruating?') {
-            return Promise.resolve('Yes');
-          }
-          return Promise.resolve(null);
-        },
-      );
+      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
+        date: '2024-01-15',
+        daysSince: 30,
+      });
 
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1493,16 +1471,10 @@ describe('OrderFulfillmentSlider', () => {
 
     it('applies red styling when daysSince > 28 (warning threshold)', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockImplementation(
-        (patientUuid: string, conceptName: string) => {
-          if (conceptName === 'LMP Date') {
-            return Promise.resolve({ date: '2024-01-10', daysSince: 29 });
-          } else if (conceptName === 'Has the Patient begun Menstruating?') {
-            return Promise.resolve('Yes');
-          }
-          return Promise.resolve(null);
-        },
-      );
+      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
+        date: '2024-01-10',
+        daysSince: 29,
+      });
 
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1522,16 +1494,10 @@ describe('OrderFulfillmentSlider', () => {
 
     it('does not apply red styling when daysSince <= 28', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockImplementation(
-        (patientUuid: string, conceptName: string) => {
-          if (conceptName === 'LMP Date') {
-            return Promise.resolve({ date: '2024-02-10', daysSince: 28 });
-          } else if (conceptName === 'Has the Patient begun Menstruating?') {
-            return Promise.resolve('Yes');
-          }
-          return Promise.resolve(null);
-        },
-      );
+      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
+        date: '2024-02-10',
+        daysSince: 28,
+      });
 
       renderWithIntl(
         <OrderFulfillmentSlider

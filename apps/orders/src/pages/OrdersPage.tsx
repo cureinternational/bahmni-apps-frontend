@@ -154,16 +154,16 @@ export const OrdersPage: React.FC = () => {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
   const contentScrollRef = useRef<HTMLDivElement>(null);
-  // Store prefetched observation data keyed by patientUuid — populated on row expand
-  const prefetchedObservations = useRef<
-    Record<string, Record<string, ObservationData | string | null>>
-  >({});
+  // Store prefetched LMP observation data keyed by patientUuid — populated on row expand
+  const prefetchedObservations = useRef<Record<string, ObservationData | null>>(
+    {},
+  );
 
   const handlePatientExpand = (
     patientUuid: string,
-    observations: Record<string, ObservationData | string | null>,
+    lmpData: ObservationData | null,
   ) => {
-    prefetchedObservations.current[patientUuid] = observations;
+    prefetchedObservations.current[patientUuid] = lmpData;
   };
 
   const handleOrderClick = (

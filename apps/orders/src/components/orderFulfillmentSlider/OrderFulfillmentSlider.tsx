@@ -32,10 +32,7 @@ interface OrderFulfillmentSliderProps {
   isOpen: boolean;
   tabLabel?: string;
   onSaveSuccess?: () => void;
-  prefetchedObservations?: Record<
-    string,
-    ObservationData | string | null
-  > | null;
+  prefetchedObservations?: ObservationData | null;
 }
 
 export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
@@ -56,23 +53,16 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [owner, setOwner] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
-  const [observationData, setObservationData] = useState<
-    Record<string, ObservationData | string | null>
-  >({});
+  const [lmpData, setLmpData] = useState<ObservationData | null>(null);
 
-  const { sliderObservationFields = [] } = ordersTableConfig ?? {};
+  const { lmpConfig } = ordersTableConfig ?? {};
 
-  const activeFields = sliderObservationFields.filter((field) => {
-    const tabMatch =
-      !field.tabLabels?.length || field.tabLabels.includes(tabLabel);
-    const genderMatch =
-      !field.eligibility?.gender ||
-      field.eligibility.gender === order?.patient?.gender;
-    const ageMatch =
-      field.eligibility?.minAge == null ||
-      parseAgeYears(order?.patient?.age) >= field.eligibility.minAge;
-    return tabMatch && genderMatch && ageMatch;
-  });
+  const isLmpEligible = !!(
+    lmpConfig &&
+    order?.patient?.gender === 'F' &&
+    parseAgeYears(order?.patient?.age) >= 10 &&
+    (!lmpConfig.tabLabels?.length || lmpConfig.tabLabels.includes(tabLabel))
+  );
 
   const availableStatuses: OrderStatusConfig[] = (
     (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
@@ -109,50 +99,41 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   useEffect(() => {
     let isMounted = true;
 
-    if (isOpen && activeFields.length > 0 && order?.patientUuid) {
+    if (isOpen && isLmpEligible && order?.patientUuid) {
       if (prefetchedObservations) {
-        setObservationData(prefetchedObservations);
+        setLmpData(prefetchedObservations);
       } else {
         // Fallback: fetch if row was not expanded first (e.g., direct link to order)
-        setObservationData({});
-        const conceptsToFetch = [
-          ...new Set(
-            activeFields.flatMap(
-              (f) =>
-                [f.conceptName, f.conditionConceptName].filter(
-                  Boolean,
-                ) as string[],
-            ),
-          ),
-        ];
-        Promise.all(
-          conceptsToFetch.map((c) =>
-            getObservationByConceptName(order.patientUuid, c),
-          ),
+        setLmpData(null);
+        getObservationByConceptName(
+          order.patientUuid,
+          lmpConfig!.lmpDateConcept,
         )
-          .then((results) => {
+          .then((result) => {
             if (isMounted) {
-              setObservationData(
-                Object.fromEntries(
-                  conceptsToFetch.map((c, i) => [c, results[i]]),
-                ),
-              );
+              setLmpData(result as ObservationData | null);
             }
           })
           .catch(() => {
             if (isMounted) {
-              setObservationData({});
+              setLmpData(null);
             }
           });
       }
     } else if (!isOpen) {
-      setObservationData({});
+      setLmpData(null);
     }
 
     return () => {
       isMounted = false;
     };
-  }, [isOpen, order?.patientUuid, prefetchedObservations, activeFields.length]);
+  }, [
+    isOpen,
+    order?.patientUuid,
+    isLmpEligible,
+    lmpConfig,
+    prefetchedObservations,
+  ]);
 
   const getNestedValue = (obj: Order, key: string): string => {
     const keys = key.split('.');
@@ -252,7 +233,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
           </section>
         )}
 
-        {(patientDetailFields.length > 0 || activeFields.length > 0) && (
+        {(patientDetailFields.length > 0 || isLmpEligible) && (
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>{t('PATIENT_DETAILS')}</h3>
             <div className={styles.patientDetailsGrid}>
@@ -267,57 +248,28 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   </div>
                 );
               })}
-              {activeFields.map((field) => {
-                if (field.type === 'days_since_date') {
-                  const dateObs = observationData[field.conceptName] as
-                    | typeof ObservationData
-                    | null
-                    | undefined;
-                  const conditionVal = field.conditionConceptName
-                    ? (observationData[field.conditionConceptName] as
-                        | string
-                        | null
-                        | undefined)
-                    : field.conditionPositiveValue;
-
-                  const isConditionMet =
-                    !field.conditionConceptName ||
-                    conditionVal === field.conditionPositiveValue;
-                  const isNotRecorded = dateObs == null;
-                  const isWarning =
-                    isConditionMet && dateObs && field.warningThreshold != null
-                      ? (dateObs as ObservationData).daysSince >
-                        field.warningThreshold
-                      : false;
-
-                  return (
-                    <div
-                      key={field.conceptName}
-                      className={styles.patientDetailItem}
-                      data-testid="observation-days-display"
-                    >
-                      <span className={styles.label}>
-                        {t(field.translationKey)}
-                      </span>
-                      <span
-                        className={`${styles.value} ${
-                          isWarning ? styles.observationWarning : ''
-                        } ${
-                          isNotRecorded ? styles.observationNotRecorded : ''
-                        }`}
-                        data-testid="observation-days-value"
-                      >
-                        {isConditionMet && dateObs
-                          ? (dateObs as ObservationData).daysSince
-                          : !isConditionMet && conditionVal != null
-                            ? t('OBSERVATION_CONDITION_NOT_MET')
-                            : t('OBSERVATION_NOT_RECORDED')}
-                      </span>
-                    </div>
-                  );
-                }
-                return null;
-              })}
+              {isLmpEligible && (
+                <div
+                  className={styles.patientDetailItem}
+                  data-testid="observation-days-display"
+                >
+                  <span className={styles.label}>{t('DAYS_SINCE_LMP')}</span>
+                  <span
+                    className={`${styles.value} ${
+                      lmpData &&
+                      lmpConfig?.threshold != null &&
+                      lmpData.daysSince > lmpConfig.threshold
+                        ? styles.observationWarning
+                        : ''
+                    }`}
+                    data-testid="observation-days-value"
+                  >
+                    {lmpData
+                      ? lmpData.daysSince
+                      : t('OBSERVATION_NOT_RECORDED')}
+                  </span>
+                </div>
+              )}
             </div>
           </section>
         )}
