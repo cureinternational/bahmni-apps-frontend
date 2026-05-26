@@ -23,6 +23,7 @@ export interface PatientDetailField {
  */
 export interface LmpConfig {
   lmpDateConcept: string;
+  isPatientMenstruatingConcept?: string;
   threshold?: number;
   tabLabels?: string[];
 }

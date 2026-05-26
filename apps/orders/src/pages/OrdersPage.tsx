@@ -154,16 +154,26 @@ export const OrdersPage: React.FC = () => {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
   const contentScrollRef = useRef<HTMLDivElement>(null);
-  // Store prefetched LMP observation data keyed by patientUuid — populated on row expand
-  const prefetchedObservations = useRef<Record<string, ObservationData | null>>(
-    {},
-  );
+  // Store prefetched observation data keyed by patientUuid — populated on row expand
+  const prefetchedObservations = useRef<
+    Record<
+      string,
+      {
+        lmpData: ObservationData | null;
+        menstruatingStatus: string | null;
+      }
+    >
+  >({});
 
   const handlePatientExpand = (
     patientUuid: string,
     lmpData: ObservationData | null,
+    menstruatingStatus?: string | null,
   ) => {
-    prefetchedObservations.current[patientUuid] = lmpData;
+    prefetchedObservations.current[patientUuid] = {
+      lmpData,
+      menstruatingStatus: menstruatingStatus ?? null,
+    };
   };
 
   const handleOrderClick = (
@@ -267,11 +277,16 @@ export const OrdersPage: React.FC = () => {
               onClose={handleCloseSlider}
               tabLabel={selectedTabLabel}
               onSaveSuccess={handleSaveSuccess}
-              prefetchedObservations={
+              prefetchedLmpData={
                 selectedOrder
-                  ? (prefetchedObservations.current[
-                      selectedOrder.patientUuid
-                    ] ?? null)
+                  ? (prefetchedObservations.current[selectedOrder.patientUuid]
+                      ?.lmpData ?? null)
+                  : null
+              }
+              prefetchedMenstruatingStatus={
+                selectedOrder
+                  ? (prefetchedObservations.current[selectedOrder.patientUuid]
+                      ?.menstruatingStatus ?? null)
                   : null
               }
             />

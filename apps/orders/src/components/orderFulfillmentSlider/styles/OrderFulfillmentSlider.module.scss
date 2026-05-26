@@ -238,6 +238,10 @@
   font-weight: 600;
 }
 
+.value.observationNotMenstruating {
+  color: #161616 !important;
+}
+
 .notesTextarea {
   @include type-style("body-compact-01");
   width: 100%;

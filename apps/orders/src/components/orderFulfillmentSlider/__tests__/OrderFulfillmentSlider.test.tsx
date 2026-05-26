@@ -174,6 +174,7 @@ describe('OrderFulfillmentSlider', () => {
       ],
       lmpConfig: {
         lmpDateConcept: 'LMP Date',
+        isPatientMenstruatingConcept: 'Has the Patient begun Menstruating?',
         threshold: 28,
         tabLabels: ['Radiology Order'],
       },
@@ -1404,10 +1405,12 @@ describe('OrderFulfillmentSlider', () => {
   describe('LMP (Last Menstrual Period) Display', () => {
     it('fetches observation data when radiology slider opens with config', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
-        date: '2024-01-15',
-        daysSince: 30,
-      });
+      (mockGetObservationByConceptName as jest.Mock)
+        .mockResolvedValueOnce({
+          date: '2024-01-15',
+          daysSince: 30,
+        })
+        .mockResolvedValueOnce('yes');
 
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1422,6 +1425,10 @@ describe('OrderFulfillmentSlider', () => {
         expect(mockGetObservationByConceptName).toHaveBeenCalledWith(
           'patient-uuid-1',
           'LMP Date',
+        );
+        expect(mockGetObservationByConceptName).toHaveBeenCalledWith(
+          'patient-uuid-1',
+          'Has the Patient begun Menstruating?',
         );
       });
     });
@@ -1445,10 +1452,10 @@ describe('OrderFulfillmentSlider', () => {
 
     it('displays observation days when data is available for radiology tab', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
+      const mockLmpData = {
         date: '2024-01-15',
         daysSince: 30,
-      });
+      };
 
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1456,6 +1463,8 @@ describe('OrderFulfillmentSlider', () => {
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
+          prefetchedLmpData={mockLmpData}
+          prefetchedMenstruatingStatus="yes"
         />,
       );
 
@@ -1471,10 +1480,10 @@ describe('OrderFulfillmentSlider', () => {
 
     it('applies red styling when daysSince > 28 (warning threshold)', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
+      const mockLmpData = {
         date: '2024-01-10',
         daysSince: 29,
-      });
+      };
 
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1482,6 +1491,8 @@ describe('OrderFulfillmentSlider', () => {
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
+          prefetchedLmpData={mockLmpData}
+          prefetchedMenstruatingStatus="yes"
         />,
       );
 
@@ -1494,10 +1505,10 @@ describe('OrderFulfillmentSlider', () => {
 
     it('does not apply red styling when daysSince <= 28', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue({
+      const mockLmpData = {
         date: '2024-02-10',
         daysSince: 28,
-      });
+      };
 
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1505,6 +1516,8 @@ describe('OrderFulfillmentSlider', () => {
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
+          prefetchedLmpData={mockLmpData}
+          prefetchedMenstruatingStatus="yes"
         />,
       );
 
@@ -1517,7 +1530,6 @@ describe('OrderFulfillmentSlider', () => {
 
     it('shows observation section with "not recorded" message when data is null', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
-      (mockGetObservationByConceptName as jest.Mock).mockResolvedValue(null);
 
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1525,6 +1537,8 @@ describe('OrderFulfillmentSlider', () => {
           onClose={mockOnClose}
           isOpen
           tabLabel="Radiology Order"
+          prefetchedLmpData={null}
+          prefetchedMenstruatingStatus="yes"
         />,
       );
 
@@ -1535,6 +1549,57 @@ describe('OrderFulfillmentSlider', () => {
         expect(screen.getByTestId('observation-days-value')).toHaveTextContent(
           'OBSERVATION_NOT_RECORDED',
         );
+      });
+    });
+
+    it('displays "Not yet menstruating" message in black when menstruating status is "no"', async () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+          prefetchedLmpData={null}
+          prefetchedMenstruatingStatus="no"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId('observation-days-display'),
+        ).toBeInTheDocument();
+        const obsValue = screen.getByTestId('observation-days-value');
+        expect(obsValue).toHaveTextContent('NOT_YET_MENSTRUATING');
+        expect(obsValue).toHaveClass('observationNotMenstruating');
+        expect(obsValue).not.toHaveClass('observationWarning');
+        expect(obsValue).not.toHaveClass('observationNotRecorded');
+      });
+    });
+
+    it('prioritizes menstruating status over LMP data when menstruating is "no"', async () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const mockLmpData = {
+        date: '2024-01-15',
+        daysSince: 30,
+      };
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+          prefetchedLmpData={mockLmpData}
+          prefetchedMenstruatingStatus="no"
+        />,
+      );
+
+      await waitFor(() => {
+        const obsValue = screen.getByTestId('observation-days-value');
+        expect(obsValue).toHaveTextContent('NOT_YET_MENSTRUATING');
+        expect(obsValue).not.toHaveTextContent('30');
       });
     });
 

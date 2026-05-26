@@ -43,6 +43,7 @@ interface OrdersFulfillmentTableProps {
   onPatientExpand?: (
     patientUuid: string,
     lmpData: ObservationData | null,
+    menstruatingStatus?: string | null,
   ) => void;
 }
 
@@ -365,12 +366,27 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       if (!fetchedPatientUuids.current.has(patientUuid!)) {
         fetchedPatientUuids.current.add(patientUuid!);
         setTimeout(() => {
-          getObservationByConceptName(patientUuid!, lmpConfig!.lmpDateConcept)
-            .then((result) => {
-              onPatientExpand?.(patientUuid!, result as ObservationData | null);
+          // Fetch both LMP Date and Menstruating status
+          const conceptsToFetch = [lmpConfig!.lmpDateConcept];
+          if (lmpConfig!.isPatientMenstruatingConcept) {
+            conceptsToFetch.push(lmpConfig!.isPatientMenstruatingConcept);
+          }
+
+          Promise.all(
+            conceptsToFetch.map((concept) =>
+              getObservationByConceptName(patientUuid!, concept),
+            ),
+          )
+            .then((results) => {
+              const [lmpData, menstruatingData] = results;
+              onPatientExpand?.(
+                patientUuid!,
+                lmpData as ObservationData | null,
+                menstruatingData as string | null,
+              );
             })
             .catch(() => {
-              onPatientExpand?.(patientUuid!, null);
+              onPatientExpand?.(patientUuid!, null, null);
             });
         }, 0);
       }

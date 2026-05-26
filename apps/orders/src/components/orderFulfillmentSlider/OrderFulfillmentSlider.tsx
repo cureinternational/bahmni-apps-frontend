@@ -32,7 +32,8 @@ interface OrderFulfillmentSliderProps {
   isOpen: boolean;
   tabLabel?: string;
   onSaveSuccess?: () => void;
-  prefetchedObservations?: ObservationData | null;
+  prefetchedLmpData?: ObservationData | null;
+  prefetchedMenstruatingStatus?: string | null;
 }
 
 export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
@@ -41,7 +42,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   isOpen,
   tabLabel = '',
   onSaveSuccess,
-  prefetchedObservations = null,
+  prefetchedLmpData,
+  prefetchedMenstruatingStatus,
 }) => {
   const { t } = useTranslation();
   const { addNotification } = useNotification();
@@ -54,6 +56,9 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
   const [lmpData, setLmpData] = useState<ObservationData | null>(null);
+  const [menstruatingStatus, setMenstruatingStatus] = useState<string | null>(
+    null,
+  );
 
   const { lmpConfig } = ordersTableConfig ?? {};
 
@@ -63,6 +68,41 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     parseAgeYears(order?.patient?.age) >= 10 &&
     (!lmpConfig.tabLabels?.length || lmpConfig.tabLabels.includes(tabLabel))
   );
+
+  const getLmpDisplayInfo = () => {
+    if (!isLmpEligible) {
+      return { show: false };
+    }
+
+    if (lmpConfig?.isPatientMenstruatingConcept && menstruatingStatus) {
+      if (menstruatingStatus.toLowerCase() === 'no') {
+        return {
+          show: true,
+          message: t('NOT_YET_MENSTRUATING'),
+          className: styles.observationNotMenstruating,
+        };
+      }
+    }
+
+    if (lmpData?.daysSince !== undefined && lmpData.daysSince !== null) {
+      return {
+        show: true,
+        message: `${lmpData.daysSince}`,
+        className:
+          lmpData.daysSince > (lmpConfig?.threshold ?? 0)
+            ? styles.observationWarning
+            : '',
+      };
+    }
+
+    return {
+      show: true,
+      message: t('OBSERVATION_NOT_RECORDED'),
+      className: styles.observationNotRecorded,
+    };
+  };
+
+  const lmpDisplayInfo = getLmpDisplayInfo();
 
   const availableStatuses: OrderStatusConfig[] = (
     (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
@@ -100,28 +140,52 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     let isMounted = true;
 
     if (isOpen && isLmpEligible && order?.patientUuid) {
-      if (prefetchedObservations) {
-        setLmpData(prefetchedObservations);
-      } else {
-        // Fallback: fetch if row was not expanded first (e.g., direct link to order)
-        setLmpData(null);
-        getObservationByConceptName(
-          order.patientUuid,
-          lmpConfig!.lmpDateConcept,
+      if (prefetchedLmpData !== undefined) {
+        setLmpData(prefetchedLmpData);
+      }
+      if (prefetchedMenstruatingStatus !== undefined) {
+        setMenstruatingStatus(prefetchedMenstruatingStatus);
+      }
+
+      if (
+        prefetchedLmpData === undefined ||
+        prefetchedMenstruatingStatus === undefined
+      ) {
+        const conceptsToFetch = [lmpConfig!.lmpDateConcept];
+        if (lmpConfig!.isPatientMenstruatingConcept) {
+          conceptsToFetch.push(lmpConfig!.isPatientMenstruatingConcept);
+        }
+
+        Promise.all(
+          conceptsToFetch.map((concept) =>
+            getObservationByConceptName(order.patientUuid, concept),
+          ),
         )
-          .then((result) => {
+          .then((results) => {
             if (isMounted) {
-              setLmpData(result as ObservationData | null);
+              const [lmpResult, menstruatingResult] = results;
+              if (prefetchedLmpData === undefined) {
+                setLmpData(lmpResult as ObservationData | null);
+              }
+              if (prefetchedMenstruatingStatus === undefined) {
+                setMenstruatingStatus(menstruatingResult as string | null);
+              }
             }
           })
           .catch(() => {
             if (isMounted) {
-              setLmpData(null);
+              if (prefetchedLmpData === undefined) {
+                setLmpData(null);
+              }
+              if (prefetchedMenstruatingStatus === undefined) {
+                setMenstruatingStatus(null);
+              }
             }
           });
       }
     } else if (!isOpen) {
       setLmpData(null);
+      setMenstruatingStatus(null);
     }
 
     return () => {
@@ -131,7 +195,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     isOpen,
     order?.patientUuid,
     isLmpEligible,
-    prefetchedObservations,
+    prefetchedLmpData,
+    prefetchedMenstruatingStatus,
     lmpConfig,
   ]);
 
@@ -248,25 +313,17 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
                   </div>
                 );
               })}
-              {isLmpEligible && (
+              {lmpDisplayInfo.show && (
                 <div
                   className={styles.patientDetailItem}
                   data-testid="observation-days-display"
                 >
                   <span className={styles.label}>{t('DAYS_SINCE_LMP')}</span>
                   <span
-                    className={`${styles.value} ${
-                      lmpData &&
-                      lmpConfig?.threshold != null &&
-                      lmpData.daysSince > lmpConfig.threshold
-                        ? styles.observationWarning
-                        : ''
-                    }`}
+                    className={`${styles.value} ${lmpDisplayInfo.className}`}
                     data-testid="observation-days-value"
                   >
-                    {lmpData
-                      ? lmpData.daysSince
-                      : t('OBSERVATION_NOT_RECORDED')}
+                    {lmpDisplayInfo.message}
                   </span>
                 </div>
               )}
