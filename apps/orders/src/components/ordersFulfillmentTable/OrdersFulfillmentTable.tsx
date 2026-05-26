@@ -64,11 +64,10 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     orderId: string;
     rowTop: number;
   } | null>(null);
+  const fetchedPatientUuids = useRef<Set<string>>(new Set());
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
-  // Track patients whose LMP data has already been fetched to avoid duplicate calls
-  const fetchedPatientUuids = useRef<Set<string>>(new Set());
 
   const [selectedStatuses, setSelectedStatuses] = useState<OrderStatusConfig[]>(
     (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
@@ -87,6 +86,11 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSearchActive]);
+
+  // Clear LMP fetch cache when orders refresh or tab changes
+  useEffect(() => {
+    fetchedPatientUuids.current = new Set();
+  }, [rows, selectedIndex]);
 
   const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
     setSelectedStatuses(statuses);
@@ -354,22 +358,22 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
       parseAgeYears(patient?.age) >= 10 &&
       (!lmpConfig.tabLabels?.length ||
         lmpConfig.tabLabels.includes(currentTabLabel)) &&
-      patientUuid &&
-      !fetchedPatientUuids.current.has(patientUuid)
+      patientUuid
     );
 
     if (shouldFetchLmp) {
-      fetchedPatientUuids.current.add(patientUuid);
-      // Defer async call outside render cycle
-      setTimeout(() => {
-        getObservationByConceptName(patientUuid!, lmpConfig!.lmpDateConcept)
-          .then((result) => {
-            onPatientExpand?.(patientUuid!, result as ObservationData | null);
-          })
-          .catch(() => {
-            onPatientExpand?.(patientUuid!, null);
-          });
-      }, 0);
+      if (!fetchedPatientUuids.current.has(patientUuid!)) {
+        fetchedPatientUuids.current.add(patientUuid!);
+        setTimeout(() => {
+          getObservationByConceptName(patientUuid!, lmpConfig!.lmpDateConcept)
+            .then((result) => {
+              onPatientExpand?.(patientUuid!, result as ObservationData | null);
+            })
+            .catch(() => {
+              onPatientExpand?.(patientUuid!, null);
+            });
+        }, 0);
+      }
     }
 
     return (

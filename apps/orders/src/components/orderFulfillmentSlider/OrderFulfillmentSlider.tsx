@@ -131,8 +131,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     isOpen,
     order?.patientUuid,
     isLmpEligible,
-    lmpConfig,
     prefetchedObservations,
+    lmpConfig,
   ]);
 
   const getNestedValue = (obj: Order, key: string): string => {

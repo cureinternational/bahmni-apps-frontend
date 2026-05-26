@@ -183,12 +183,13 @@ export const OrdersPage: React.FC = () => {
   };
   useEffect(() => {
     fetchAllPendingOrders(tabs);
+    prefetchedObservations.current = {};
   }, [tabs, currentUser, fetchAllPendingOrders]);
   useEffect(() => {
     fetchOrdersForTab(selectedIndex);
     setIsSliderOpen(false);
     setSelectedOrder(null);
-    // Clear prefetch cache when switching tabs
+    // Clear observation cache when switching tabs or fetching fresh orders
     prefetchedObservations.current = {};
   }, [selectedIndex, fetchOrdersForTab]);
 
