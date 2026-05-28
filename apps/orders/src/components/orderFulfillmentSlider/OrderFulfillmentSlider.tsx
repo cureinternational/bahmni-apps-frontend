@@ -58,9 +58,8 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
 
   const isRadiologyTab = tabLabel === RADIOLOGY_TAB_LABEL;
 
-  const availableStatuses: OrderStatusConfig[] = (
-    (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
-  ).filter((s) => s.value !== 'New');
+  const availableStatuses: OrderStatusConfig[] =
+    (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? [];
 
   const patientDetailFields =
     ordersTableConfig?.manageOrdersPanelPatientDetails ?? [];

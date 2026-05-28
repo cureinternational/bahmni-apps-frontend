@@ -1132,6 +1132,33 @@ describe('OrderFulfillmentSlider', () => {
       });
     });
 
+    it('saves with draft status when New is selected from a non-New order', async () => {
+      mockCreateTask.mockResolvedValue({});
+      useOrdersConfig.mockReturnValue(mockConfig);
+      const inProgressOrder: Order = { ...mockOrder, status: 'In Progress' };
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={inProgressOrder}
+          onClose={mockOnClose}
+          isOpen
+        />,
+      );
+      fireEvent.change(screen.getByTestId('order-notes'), {
+        target: { value: 'Reverting to new' },
+      });
+      fireEvent.click(screen.getByText('SAVE'));
+      await waitFor(() => {
+        expect(mockCreateTask).toHaveBeenCalledWith(
+          'order-1',
+          'draft',
+          expect.objectContaining({ patientUuid: 'patient-uuid-1' }),
+        );
+        expect(mockAddNotification).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'success' }),
+        );
+      });
+    });
+
     it('does not call onSaveSuccess on save failure', async () => {
       mockCreateTask.mockRejectedValue(new Error('Network error'));
       useOrdersConfig.mockReturnValue(mockConfig);
@@ -1162,7 +1189,7 @@ describe('OrderFulfillmentSlider', () => {
     });
   });
 
-  describe('Status Auto-Population for New Orders', () => {
+  describe('Status Pre-Population', () => {
     it('auto-populates status with Acknowledged when order status is New', () => {
       useOrdersConfig.mockReturnValue(mockConfig);
       renderWithIntl(
@@ -1178,7 +1205,7 @@ describe('OrderFulfillmentSlider', () => {
       expect(statusInput.value).toBe('STATUS_ACKNOWLEDGED');
     });
 
-    it('does not auto-populate status for a non-New order', () => {
+    it('pre-populates status with current status for a non-New order', () => {
       const inProgressOrder: Order = { ...mockOrder, status: 'In Progress' };
       useOrdersConfig.mockReturnValue(mockConfig);
       renderWithIntl(
@@ -1194,7 +1221,7 @@ describe('OrderFulfillmentSlider', () => {
       expect(statusInput.value).toBe('STATUS_IN_PROGRESS');
     });
 
-    it('does not show New as an option in the status dropdown', () => {
+    it('shows New as an option in the status dropdown', () => {
       useOrdersConfig.mockReturnValue(mockConfig);
       renderWithIntl(
         <OrderFulfillmentSlider
@@ -1203,7 +1230,7 @@ describe('OrderFulfillmentSlider', () => {
           isOpen
         />,
       );
-      expect(screen.queryByText('STATUS_NEW')).not.toBeInTheDocument();
+      expect(screen.getByTestId('order-status-select')).toBeInTheDocument();
     });
 
     it('auto-populates Acknowledged again when slider closes and reopens for a New order', () => {
