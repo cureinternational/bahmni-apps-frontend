@@ -1143,6 +1143,12 @@ describe('OrderFulfillmentSlider', () => {
           isOpen
         />,
       );
+      // Open status dropdown and select 'New'
+      fireEvent.click(screen.getByTestId('order-status-select'));
+      const newOption = await screen.findByRole('option', {
+        name: 'STATUS_NEW',
+      });
+      fireEvent.click(newOption);
       fireEvent.change(screen.getByTestId('order-notes'), {
         target: { value: 'Reverting to new' },
       });

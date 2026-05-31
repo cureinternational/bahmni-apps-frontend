@@ -47,7 +47,11 @@ export const transformOrderData = (
       if (item.priority === ORDER_PRIORITY.STAT) {
         urgentOrders += 1;
       }
-      if (!item.taskStatus || item.taskStatus === 'draft' || item.taskStatus === 'unknown') {
+      if (
+        !item.taskStatus ||
+        item.taskStatus === 'draft' ||
+        item.taskStatus === 'unknown'
+      ) {
         newOrders += 1;
       }
       return {
