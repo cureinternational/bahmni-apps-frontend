@@ -11,7 +11,7 @@ import {
 import moment from 'moment';
 import { create } from 'zustand';
 import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../constants/app';
-import { DB_FULFILLER_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
+import { FHIR_TASK_STATUS_TO_UI_STATUS } from '../constants/orderStatusMappings';
 import { PatientOrderRow } from '../models/orderFulfillment';
 import { ORDER_PRIORITY, OrderItem, OrderTab } from '../models/ordersConfig';
 
@@ -47,7 +47,11 @@ export const transformOrderData = (
       if (item.priority === ORDER_PRIORITY.STAT) {
         urgentOrders += 1;
       }
-      if (!item.taskStatus) {
+      if (
+        !item.taskStatus ||
+        item.taskStatus === 'draft' ||
+        item.taskStatus === 'unknown'
+      ) {
         newOrders += 1;
       }
       return {
@@ -60,7 +64,7 @@ export const transformOrderData = (
         providerComments: item.providerComments,
         orderType: '',
         status: item.taskStatus
-          ? (DB_FULFILLER_STATUS_TO_UI_STATUS[item.taskStatus] ?? 'New')
+          ? (FHIR_TASK_STATUS_TO_UI_STATUS[item.taskStatus] ?? 'New')
           : 'New',
         note: item.notes ? item.notes.replaceAll(' | ', '\n') : '',
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing

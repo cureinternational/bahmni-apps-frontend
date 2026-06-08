@@ -7,23 +7,26 @@ import { OrderStatus } from '../models/orderFulfillment';
 export const UI_STATUS_TO_FHIR_TASK_STATUS: Partial<
   Record<OrderStatus, string>
 > = {
-  New: 'requested',
+  New: 'draft',
   Acknowledged: 'requested',
   'In Progress': 'accepted',
   Completed: 'completed',
   'Ready for Pickup': 'ready',
+  'On Hold': 'on-hold',
 };
 
 /**
- * Maps FHIR task status values (lowercase) to UI order statuses for display.
- * SQL returns ft_latest.status lowercased via LOWER().
+ * Maps FHIR Task status values to UI order statuses for display.
+ * Null/missing task status values are handled by the caller (default: 'New').
  */
-export const DB_FULFILLER_STATUS_TO_UI_STATUS: Record<string, OrderStatus> = {
+export const FHIR_TASK_STATUS_TO_UI_STATUS: Record<string, OrderStatus> = {
+  draft: 'New',
   requested: 'Acknowledged',
   accepted: 'In Progress',
   completed: 'Completed',
   rejected: 'New',
   ready: 'Ready for Pickup',
+  onhold: 'On Hold',
 };
 
 /**

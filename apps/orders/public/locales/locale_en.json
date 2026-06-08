@@ -19,7 +19,9 @@
   "STATUS_ACKNOWLEDGED": "Acknowledged",
   "STATUS_IN_PROGRESS": "In Progress",
   "STATUS_COMPLETED": "Completed",
+
   "STATUS_READY_TO_BE_PICKED_UP": "Ready for Pickup",
+  "STATUS_ON_HOLD": "On Hold",
   "URGENT": "Urgent",
   "UNASSIGNED": "Unassigned",
   "NO_ORDERS_FOUND": "No orders found",
@@ -44,5 +46,7 @@
   "ORDER_OWNER": "Order Owner",
   "NOTES": "Notes",
   "ORDER_SAVE_SUCCESS": "Order details updated successfully",
-  "ORDER_SAVE_ERROR": "Failed to update order details"
+  "ORDER_SAVE_ERROR": "Failed to update order details",
+  "OBSERVATION_NOT_RECORDED": "LMP date not recorded",
+  "NOT_YET_MENSTRUATING": "Not yet menstruating"
 }

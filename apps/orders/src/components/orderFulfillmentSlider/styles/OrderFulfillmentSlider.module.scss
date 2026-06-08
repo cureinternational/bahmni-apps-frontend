@@ -228,9 +228,18 @@
   color: #da1e28;
 }
 
-.value.lmpWarning {
+.value.observationWarning {
   color: #ff0000 !important;
   font-weight: 600;
+}
+
+.value.observationNotRecorded {
+  color: #ff0000 !important;
+  font-weight: 600;
+}
+
+.value.observationNotMenstruating {
+  color: #161616 !important;
 }
 
 .notesTextarea {

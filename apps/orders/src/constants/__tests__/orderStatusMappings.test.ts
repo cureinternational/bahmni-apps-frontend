@@ -1,6 +1,6 @@
 import {
   UI_STATUS_TO_FHIR_TASK_STATUS,
-  DB_FULFILLER_STATUS_TO_UI_STATUS,
+  FHIR_TASK_STATUS_TO_UI_STATUS,
 } from '../orderStatusMappings';
 
 describe('orderStatusMappings', () => {
@@ -16,20 +16,16 @@ describe('orderStatusMappings', () => {
     });
   });
 
-  describe('DB_FULFILLER_STATUS_TO_UI_STATUS', () => {
+  describe('FHIR_TASK_STATUS_TO_UI_STATUS', () => {
     it('maps ready FHIR task status to Ready for Pickup UI status', () => {
-      expect(DB_FULFILLER_STATUS_TO_UI_STATUS['ready']).toBe(
-        'Ready for Pickup',
-      );
+      expect(FHIR_TASK_STATUS_TO_UI_STATUS['ready']).toBe('Ready for Pickup');
     });
 
     it('maps lowercase FHIR task statuses to UI statuses', () => {
-      expect(DB_FULFILLER_STATUS_TO_UI_STATUS['requested']).toBe(
-        'Acknowledged',
-      );
-      expect(DB_FULFILLER_STATUS_TO_UI_STATUS['accepted']).toBe('In Progress');
-      expect(DB_FULFILLER_STATUS_TO_UI_STATUS['completed']).toBe('Completed');
-      expect(DB_FULFILLER_STATUS_TO_UI_STATUS['rejected']).toBe('New');
+      expect(FHIR_TASK_STATUS_TO_UI_STATUS['requested']).toBe('Acknowledged');
+      expect(FHIR_TASK_STATUS_TO_UI_STATUS['accepted']).toBe('In Progress');
+      expect(FHIR_TASK_STATUS_TO_UI_STATUS['completed']).toBe('Completed');
+      expect(FHIR_TASK_STATUS_TO_UI_STATUS['rejected']).toBe('New');
     });
   });
 });

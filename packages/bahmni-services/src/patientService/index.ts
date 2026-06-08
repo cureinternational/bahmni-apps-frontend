@@ -15,8 +15,8 @@ export {
   getPatientProfile,
   getRelationshipTypes,
   getPersonAttributeTypes,
-  getPatientLmpData,
-  calculateDaysSinceLmp,
+  getObservationByConceptName,
+  calculateDaysSince,
 } from './patientService';
 export {
   type FormattedPatientData,
@@ -39,7 +39,7 @@ export {
   type PersonAttributeTypesResponse,
   type ConceptAnswer,
   type PersonAttributeConcept,
-  type LmpData,
+  type ObservationData,
 } from './models';
 export {
   AttributeFormat,

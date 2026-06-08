@@ -1,5 +1,10 @@
 import { ExpandableSortableDataTable } from '@bahmni/design-system';
-import { useTranslation, TabStatuses } from '@bahmni/services';
+import {
+  useTranslation,
+  getObservationByConceptName,
+  ObservationData,
+  TabStatuses,
+} from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
 import { faBed } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,6 +23,7 @@ import {
 } from '../../models/orderFulfillment';
 import { ORDER_PRIORITY } from '../../models/ordersConfig';
 import useOrdersStore from '../../stores/ordersStore';
+import { parseAgeYears } from '../../utils/patientUtils';
 import { ExpandedOrderRow } from '../expandedOrderRow';
 import LinkButton from '../linkButton/LinkButton';
 import { NewBadge } from '../newBadge';
@@ -36,6 +42,10 @@ interface OrdersFulfillmentTableProps {
   onOrderClick?: (orderId: string) => void;
   searchTerm?: string;
   tabStatuses?: TabStatuses;
+  onPatientExpand?: (
+    patientUuid: string,
+    lmpData: ObservationData | null,
+  ) => void;
 }
 
 export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
@@ -48,6 +58,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   onOrderClick,
   searchTerm = '',
   tabStatuses,
+  onPatientExpand,
 }) => {
   const { t } = useTranslation();
   const { ordersTableConfig, tabs } = useOrdersConfig();
@@ -56,6 +67,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     orderId: string;
     rowTop: number;
   } | null>(null);
+  const fetchedPatientUuids = useRef<Set<string>>(new Set());
   const [isStatusFilterOpen, setIsStatusFilterOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
@@ -77,6 +89,11 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSearchActive]);
+
+  // Clear LMP fetch cache when orders refresh or tab changes
+  useEffect(() => {
+    fetchedPatientUuids.current = new Set();
+  }, [rows, selectedIndex]);
 
   const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
     setSelectedStatuses(statuses);
@@ -334,22 +351,54 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     }
   };
 
-  const renderExpandedContent = (row: PatientOrderRow) => (
-    <Fragment>
-      {row.orders.map((order) => (
-        <ExpandedOrderRow
-          key={order.id}
-          order={order}
-          isSelected={selectedOrderId === order.id}
-          onOrderClick={(orderId) => {
-            captureSelectedOrderRowPosition(orderId);
-            setSelectedOrderId(orderId);
-            onOrderClick?.(orderId);
-          }}
-        />
-      ))}
-    </Fragment>
-  );
+  const renderExpandedContent = (row: PatientOrderRow) => {
+    const { lmpConfig } = ordersTableConfig ?? {};
+    const lmpDateConcept = lmpConfig?.lmpDateConcept;
+    const lmpTabLabels = lmpConfig?.tabLabels;
+    const patientUuid = row.orders[0]?.patientUuid;
+    const patient = row.orders[0]?.patient;
+    const currentTabLabel = tabs?.[selectedIndex]?.label;
+
+    const shouldFetchLmp = !!(
+      lmpConfig &&
+      patient?.gender === 'F' &&
+      parseAgeYears(patient?.age) >= 10 &&
+      (!lmpTabLabels?.length || lmpTabLabels.includes(currentTabLabel)) &&
+      patientUuid
+    );
+
+    if (shouldFetchLmp) {
+      if (!fetchedPatientUuids.current.has(patientUuid!)) {
+        fetchedPatientUuids.current.add(patientUuid!);
+        setTimeout(() => {
+          getObservationByConceptName(patientUuid!, lmpDateConcept!)
+            .then((result) => {
+              onPatientExpand?.(patientUuid!, result as ObservationData | null);
+            })
+            .catch(() => {
+              onPatientExpand?.(patientUuid!, null);
+            });
+        }, 0);
+      }
+    }
+
+    return (
+      <Fragment>
+        {row.orders.map((order) => (
+          <ExpandedOrderRow
+            key={order.id}
+            order={order}
+            isSelected={selectedOrderId === order.id}
+            onOrderClick={(orderId) => {
+              captureSelectedOrderRowPosition(orderId);
+              setSelectedOrderId(orderId);
+              onOrderClick?.(orderId);
+            }}
+          />
+        ))}
+      </Fragment>
+    );
+  };
 
   if (isCustomOrderTab) {
     return (
