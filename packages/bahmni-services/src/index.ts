@@ -203,6 +203,8 @@ export {
   type OrderExtensionParams,
   type OrdersTableConfig,
   type OrderColumnConfig,
+  type OrderStatusOption,
+  type TabStatuses,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

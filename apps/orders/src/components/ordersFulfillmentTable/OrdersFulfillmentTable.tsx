@@ -1,5 +1,5 @@
 import { ExpandableSortableDataTable } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, TabStatuses } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
 import { faBed } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -35,6 +35,7 @@ interface OrdersFulfillmentTableProps {
   contentScrollRef?: React.RefObject<HTMLDivElement | null>;
   onOrderClick?: (orderId: string) => void;
   searchTerm?: string;
+  tabStatuses?: TabStatuses;
 }
 
 export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
@@ -46,6 +47,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   contentScrollRef,
   onOrderClick,
   searchTerm = '',
+  tabStatuses,
 }) => {
   const { t } = useTranslation();
   const { ordersTableConfig, tabs } = useOrdersConfig();
@@ -58,9 +60,12 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
 
-  const [selectedStatuses, setSelectedStatuses] = useState<OrderStatusConfig[]>(
-    (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ?? [],
-  );
+  const effectivePreSelected = (tabStatuses?.preSelected ??
+    ordersTableConfig?.orderStatusesPreSelected ??
+    []) as OrderStatusConfig[];
+
+  const [selectedStatuses, setSelectedStatuses] =
+    useState<OrderStatusConfig[]>(effectivePreSelected);
 
   const isSearchActive = searchTerm && searchTerm.trim().length >= 3;
 
@@ -68,10 +73,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     if (isSearchActive) {
       setSelectedStatuses([]);
     } else {
-      setSelectedStatuses(
-        (ordersTableConfig?.orderStatusesPreSelected as OrderStatusConfig[]) ??
-          [],
-      );
+      setSelectedStatuses(effectivePreSelected);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSearchActive]);
@@ -205,8 +207,9 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   );
 
   const customHeaders = useMemo(() => {
-    const availableStatuses: OrderStatusConfig[] =
-      (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? [];
+    const availableStatuses: OrderStatusConfig[] = (tabStatuses?.available ??
+      ordersTableConfig?.orderStatusesAvailable ??
+      []) as OrderStatusConfig[];
 
     return headers.map((h) => {
       if (h.key === 'badge' && totalNewOrdersCount > 0) {
@@ -259,6 +262,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     });
   }, [
     ordersTableConfig,
+    tabStatuses,
     headers,
     isStatusFilterOpen,
     selectedStatuses,

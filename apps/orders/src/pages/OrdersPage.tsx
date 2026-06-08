@@ -7,7 +7,7 @@ import {
   Loading,
   Search,
 } from '@bahmni/design-system';
-import { useTranslation } from '@bahmni/services';
+import { useTranslation, TabStatuses } from '@bahmni/services';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
@@ -22,6 +22,7 @@ import styles from './styles/OrdersPage.module.scss';
 interface OrdersTabContentProps {
   tabLabel: string;
   view?: string;
+  tabStatuses?: TabStatuses;
   contentScrollRef: React.RefObject<HTMLDivElement | null>;
   isSliderOpen: boolean;
   onOrderClick: (
@@ -34,6 +35,7 @@ interface OrdersTabContentProps {
 const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
   tabLabel,
   view,
+  tabStatuses,
   contentScrollRef,
   isSliderOpen,
   onOrderClick,
@@ -126,6 +128,7 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           contentScrollRef={contentScrollRef}
           onOrderClick={handleOrderClick}
           searchTerm={searchInput}
+          tabStatuses={tabStatuses}
         />
       </div>
     </div>
@@ -147,6 +150,9 @@ export const OrdersPage: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
+  const [selectedTabStatuses, setSelectedTabStatuses] = useState<
+    TabStatuses | undefined
+  >(undefined);
   const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const handleOrderClick = (
@@ -157,8 +163,10 @@ export const OrdersPage: React.FC = () => {
     for (const patientRow of rows) {
       const order = patientRow.orders.find((o: Order) => o.id === orderId);
       if (order) {
+        const tab = tabs.find((t) => t.label === tabLabel);
         setSelectedOrder(order);
         setSelectedTabLabel(tabLabel);
+        setSelectedTabStatuses(tab?.tabStatuses);
         setIsSliderOpen(true);
         break;
       }
@@ -226,6 +234,7 @@ export const OrdersPage: React.FC = () => {
                       <OrdersTabContent
                         tabLabel={tab.label}
                         view={tab.view}
+                        tabStatuses={tab.tabStatuses}
                         contentScrollRef={contentScrollRef}
                         isSliderOpen={isSliderOpen}
                         onOrderClick={handleOrderClick}
@@ -244,6 +253,7 @@ export const OrdersPage: React.FC = () => {
               isOpen={isSliderOpen}
               onClose={handleCloseSlider}
               tabLabel={selectedTabLabel}
+              tabStatuses={selectedTabStatuses}
               onSaveSuccess={handleSaveSuccess}
             />
           </div>

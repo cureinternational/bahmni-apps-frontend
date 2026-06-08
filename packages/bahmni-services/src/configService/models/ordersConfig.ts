@@ -1,3 +1,5 @@
+import { TabStatuses } from './ordersTableConfig';
+
 /**
  * Represents the extension parameters for an order type
  */
@@ -9,6 +11,7 @@ export interface OrderExtensionParams {
   forwardButtonTitle: string;
   view: string;
   targetedTab?: string;
+  tabStatuses?: TabStatuses;
 }
 
 /**

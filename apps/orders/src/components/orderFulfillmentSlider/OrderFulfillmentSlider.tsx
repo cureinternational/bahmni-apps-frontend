@@ -6,6 +6,7 @@ import {
   getCurrentProvider,
   getPatientLmpData,
   LmpData,
+  TabStatuses,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
@@ -34,6 +35,7 @@ interface OrderFulfillmentSliderProps {
   onClose: () => void;
   isOpen: boolean;
   tabLabel?: string;
+  tabStatuses?: TabStatuses;
   onSaveSuccess?: () => void;
 }
 
@@ -42,6 +44,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   onClose,
   isOpen,
   tabLabel = '',
+  tabStatuses,
   onSaveSuccess,
 }) => {
   const { t } = useTranslation();
@@ -59,7 +62,9 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const isRadiologyTab = tabLabel === RADIOLOGY_TAB_LABEL;
 
   const availableStatuses: OrderStatusConfig[] = (
-    (ordersTableConfig?.orderStatusesAvailable as OrderStatusConfig[]) ?? []
+    (tabStatuses?.available ??
+      ordersTableConfig?.orderStatusesAvailable ??
+      []) as OrderStatusConfig[]
   ).filter((s) => s.value !== 'New');
 
   const patientDetailFields =

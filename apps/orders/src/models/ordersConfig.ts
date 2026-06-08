@@ -1,4 +1,4 @@
-import { OrderExtension } from '@bahmni/services';
+import { OrderExtension, TabStatuses } from '@bahmni/services';
 /**
  * Represents a simplified tab structure derived from OrderExtension
  * Used for rendering tabs in the UI
@@ -13,6 +13,7 @@ export interface OrderTab {
   forwardUrl: string;
   targetedTab?: string;
   view?: string;
+  tabStatuses?: TabStatuses;
 }
 /**
  * Transforms orders extension configuration to tab array
@@ -32,7 +33,7 @@ export interface OrderItem {
   providerName: string;
   providerComments: string;
   orderName: string;
-  fulfillerStatus?: string;
+  taskStatus?: string;
   ownerName?: string;
   ownerUuid?: string;
   notes?: string;
@@ -52,6 +53,7 @@ export const transformExtensionConfigToTabs = (
       forwardUrl: ext.extensionParams.forwardUrl,
       targetedTab: ext.extensionParams.targetedTab,
       view: ext.extensionParams.view,
+      tabStatuses: ext.extensionParams.tabStatuses,
     }))
     .sort((a, b) => a.order - b.order);
 };

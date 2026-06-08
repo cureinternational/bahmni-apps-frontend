@@ -878,7 +878,7 @@ describe('ordersStore', () => {
               priority: ORDER_PRIORITY.STAT,
               providerName: 'Dr. Jones',
               dateTime: '2025-02-15T11:00:00',
-              fulfillerStatus: 'IN_PROGRESS',
+              taskStatus: 'accepted',
             },
             {
               orderUuid: 'order-3',
