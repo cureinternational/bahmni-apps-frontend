@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
+    "test:coverage": "nx run-many --target=test --coverage --parallel=1 && node scripts/merge-coverage-reports.js",
     "prepare": "husky"
   },
   "private": true,
