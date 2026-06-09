@@ -1317,7 +1317,7 @@ describe('OrderFulfillmentSlider', () => {
         {
           value: 'Ready for Pickup',
           label: 'Ready for Pickup',
-          translationKey: 'STATUS_READY_TO_BE_PICKED_UP',
+          translationKey: 'STATUS_READY_FOR_PICKUP',
         },
         {
           value: 'Completed',
@@ -1334,7 +1334,7 @@ describe('OrderFulfillmentSlider', () => {
         {
           value: 'Ready for Pickup',
           label: 'Ready for Pickup',
-          translationKey: 'STATUS_READY_TO_BE_PICKED_UP',
+          translationKey: 'STATUS_READY_FOR_PICKUP',
         },
       ],
     };
@@ -1352,7 +1352,7 @@ describe('OrderFulfillmentSlider', () => {
       const statusInput = screen.getByTestId('order-status-select');
       fireEvent.click(statusInput);
       expect(
-        screen.getByText('STATUS_READY_TO_BE_PICKED_UP'),
+        screen.getByText('STATUS_READY_FOR_PICKUP'),
       ).toBeInTheDocument();
     });
 
@@ -1368,7 +1368,7 @@ describe('OrderFulfillmentSlider', () => {
       const statusInput = screen.getByTestId('order-status-select');
       fireEvent.click(statusInput);
       expect(
-        screen.queryByText('STATUS_READY_TO_BE_PICKED_UP'),
+        screen.queryByText('STATUS_READY_FOR_PICKUP'),
       ).not.toBeInTheDocument();
     });
 
@@ -1386,7 +1386,7 @@ describe('OrderFulfillmentSlider', () => {
       fireEvent.click(statusInput);
       expect(screen.getByText('STATUS_ACKNOWLEDGED')).toBeInTheDocument();
       expect(
-        screen.queryByText('STATUS_READY_TO_BE_PICKED_UP'),
+        screen.queryByText('STATUS_READY_FOR_PICKUP'),
       ).not.toBeInTheDocument();
     });
   });

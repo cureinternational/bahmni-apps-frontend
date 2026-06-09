@@ -19,7 +19,7 @@
   "STATUS_ACKNOWLEDGED": "Reconnu",
   "STATUS_IN_PROGRESS": "En cours",
   "STATUS_COMPLETED": "Terminé",
-  "STATUS_READY_TO_BE_PICKED_UP": "Ready for Pickup",
+  "STATUS_READY_FOR_PICKUP": "Ready for Pickup",
   "URGENT": "Urgent",
   "UNASSIGNED": "Non Assigné",
   "NO_ORDERS_FOUND": "Aucune ordonnance trouvée",

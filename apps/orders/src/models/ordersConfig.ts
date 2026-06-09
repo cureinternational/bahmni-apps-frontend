@@ -1,4 +1,4 @@
-import { OrderExtension, TabStatuses } from '@bahmni/services';
+import { OrderExtension, TabStatus } from '@bahmni/services';
 /**
  * Represents a simplified tab structure derived from OrderExtension
  * Used for rendering tabs in the UI
@@ -13,7 +13,7 @@ export interface OrderTab {
   forwardUrl: string;
   targetedTab?: string;
   view?: string;
-  tabStatuses?: TabStatuses;
+  tabStatuses?: TabStatus;
 }
 /**
  * Transforms orders extension configuration to tab array

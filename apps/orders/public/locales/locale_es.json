@@ -19,7 +19,7 @@
   "STATUS_ACKNOWLEDGED": "Reconocido",
   "STATUS_IN_PROGRESS": "En progreso",
   "STATUS_COMPLETED": "Completado",
-  "STATUS_READY_TO_BE_PICKED_UP": "Ready for Pickup",
+  "STATUS_READY_FOR_PICKUP": "Ready for Pickup",
   "URGENT": "Urgente",
   "UNASSIGNED": "Sin Asignar",
   "NO_ORDERS_FOUND": "No se encontraron órdenes",

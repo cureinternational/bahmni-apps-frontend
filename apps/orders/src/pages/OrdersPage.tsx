@@ -7,7 +7,7 @@ import {
   Loading,
   Search,
 } from '@bahmni/design-system';
-import { useTranslation, TabStatuses, ObservationData } from '@bahmni/services';
+import { useTranslation, TabStatus, ObservationData } from '@bahmni/services';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
@@ -22,7 +22,7 @@ import styles from './styles/OrdersPage.module.scss';
 interface OrdersTabContentProps {
   tabLabel: string;
   view?: string;
-  tabStatuses?: TabStatuses;
+  tabStatuses?: TabStatus;
   contentScrollRef: React.RefObject<HTMLDivElement | null>;
   isSliderOpen: boolean;
   onOrderClick: (
@@ -157,7 +157,7 @@ export const OrdersPage: React.FC = () => {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [selectedTabLabel, setSelectedTabLabel] = useState<string>('');
   const [selectedTabStatuses, setSelectedTabStatuses] = useState<
-    TabStatuses | undefined
+    TabStatus | undefined
   >(undefined);
   const contentScrollRef = useRef<HTMLDivElement>(null);
   // Store prefetched observation data keyed by patientUuid — populated on row expand

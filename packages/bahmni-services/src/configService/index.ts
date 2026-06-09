@@ -32,5 +32,5 @@ export {
   type OrderColumnConfig,
   type PatientDetailField,
   type OrderStatusOption,
-  type TabStatuses,
+  type TabStatus,
 } from './models/ordersTableConfig';

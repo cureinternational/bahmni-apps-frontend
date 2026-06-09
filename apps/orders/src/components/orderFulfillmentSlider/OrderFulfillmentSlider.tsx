@@ -6,7 +6,7 @@ import {
   getCurrentProvider,
   getObservationByConceptName,
   ObservationData,
-  TabStatuses,
+  TabStatus,
 } from '@bahmni/services';
 import { useNotification } from '@bahmni/widgets';
 import { Close } from '@carbon/icons-react';
@@ -32,7 +32,7 @@ interface OrderFulfillmentSliderProps {
   onClose: () => void;
   isOpen: boolean;
   tabLabel?: string;
-  tabStatuses?: TabStatuses;
+  tabStatuses?: TabStatus;
   onSaveSuccess?: () => void;
   prefetchedLmpData?: ObservationData | null;
 }

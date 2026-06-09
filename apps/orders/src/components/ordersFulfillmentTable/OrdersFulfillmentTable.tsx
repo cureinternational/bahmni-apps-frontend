@@ -3,7 +3,7 @@ import {
   useTranslation,
   getObservationByConceptName,
   ObservationData,
-  TabStatuses,
+  TabStatus,
 } from '@bahmni/services';
 import { DataTableHeader } from '@carbon/react';
 import { faBed } from '@fortawesome/free-solid-svg-icons';
@@ -41,7 +41,7 @@ interface OrdersFulfillmentTableProps {
   contentScrollRef?: React.RefObject<HTMLDivElement | null>;
   onOrderClick?: (orderId: string) => void;
   searchTerm?: string;
-  tabStatuses?: TabStatuses;
+  tabStatuses?: TabStatus;
   onPatientExpand?: (
     patientUuid: string,
     lmpData: ObservationData | null,

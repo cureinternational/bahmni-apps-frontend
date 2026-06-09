@@ -584,7 +584,7 @@ describe('OrdersFulfillmentTable', () => {
         {
           value: 'Ready for Pickup',
           label: 'Ready for Pickup',
-          translationKey: 'STATUS_READY_TO_BE_PICKED_UP',
+          translationKey: 'STATUS_READY_FOR_PICKUP',
         },
         {
           value: 'Completed',
@@ -601,7 +601,7 @@ describe('OrdersFulfillmentTable', () => {
         {
           value: 'Ready for Pickup',
           label: 'Ready for Pickup',
-          translationKey: 'STATUS_READY_TO_BE_PICKED_UP',
+          translationKey: 'STATUS_READY_FOR_PICKUP',
         },
       ],
     };

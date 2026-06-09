@@ -204,7 +204,7 @@ export {
   type OrdersTableConfig,
   type OrderColumnConfig,
   type OrderStatusOption,
-  type TabStatuses,
+  type TabStatus,
 } from './configService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';

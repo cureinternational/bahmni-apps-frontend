@@ -4,7 +4,7 @@ export interface OrderStatusOption {
   translationKey: string;
 }
 
-export interface TabStatuses {
+export interface TabStatus {
   available: OrderStatusOption[];
   preSelected: OrderStatusOption[];
 }
