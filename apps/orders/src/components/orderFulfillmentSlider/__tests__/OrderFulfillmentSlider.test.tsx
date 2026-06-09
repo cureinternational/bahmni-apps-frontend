@@ -1351,9 +1351,7 @@ describe('OrderFulfillmentSlider', () => {
       );
       const statusInput = screen.getByTestId('order-status-select');
       fireEvent.click(statusInput);
-      expect(
-        screen.getByText('STATUS_READY_FOR_PICKUP'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('STATUS_READY_FOR_PICKUP')).toBeInTheDocument();
     });
 
     it('does not show Ready for Pickup when tabStatuses is not provided', () => {
