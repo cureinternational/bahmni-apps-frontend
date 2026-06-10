@@ -182,6 +182,10 @@ describe('OrderFulfillmentSlider', () => {
         threshold: 28,
         tabLabels: ['Radiology Order'],
       },
+      tabPractitionerTypeMap: {
+        'Radiology Order': 'Radiology%20Technologist',
+        'Lab Order': 'Laboratory%20Technologist',
+      },
     },
   };
 
@@ -544,7 +548,10 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchProviders).toHaveBeenCalledWith('Radiology Order');
+        expect(mockFetchProviders).toHaveBeenCalledWith(
+          'Radiology Order',
+          mockConfig.ordersTableConfig.tabPractitionerTypeMap,
+        );
       });
     });
 
@@ -591,7 +598,10 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchProviders).toHaveBeenCalledWith('Radiology Order');
+        expect(mockFetchProviders).toHaveBeenCalledWith(
+          'Radiology Order',
+          mockConfig.ordersTableConfig.tabPractitionerTypeMap,
+        );
       });
 
       // Rerender with different tabLabel
@@ -605,7 +615,10 @@ describe('OrderFulfillmentSlider', () => {
       );
 
       await waitFor(() => {
-        expect(mockFetchProviders).toHaveBeenCalledWith('Lab Order');
+        expect(mockFetchProviders).toHaveBeenCalledWith(
+          'Lab Order',
+          mockConfig.ordersTableConfig.tabPractitionerTypeMap,
+        );
       });
     });
 

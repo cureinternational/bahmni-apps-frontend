@@ -103,7 +103,10 @@ export interface OrdersStoreState {
   setCurrentLocation: () => void;
   fetchOrdersForTab: (selected: number) => void;
   fetchAllPendingOrders: (tabs: OrderTab[]) => void;
-  fetchProviders: (tabLabel: string) => void;
+  fetchProviders: (
+    tabLabel: string,
+    tabPractitionerTypeMap?: Record<string, string>,
+  ) => void;
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
   ordersData: PatientOrderRow[];
@@ -230,7 +233,10 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
       setIsLoading(false);
     }
   },
-  fetchProviders: async (tabLabel: string) => {
+  fetchProviders: async (
+    tabLabel: string,
+    tabPractitionerTypeMap?: Record<string, string>,
+  ) => {
     const { providers: existingProviders } = get();
 
     if (existingProviders[tabLabel]) {
@@ -238,7 +244,10 @@ export const useOrdersStore = create<OrdersStoreState>((set, get) => ({
     }
 
     try {
-      const providers = await fetchProvidersByTab(tabLabel);
+      const providers = await fetchProvidersByTab(
+        tabLabel,
+        tabPractitionerTypeMap,
+      );
       set((state) => ({
         ...state,
         providers: {
