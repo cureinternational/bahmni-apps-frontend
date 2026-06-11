@@ -12,11 +12,11 @@ jest.mock('../../api', () => ({
 const mockGet = get as jest.MockedFunction<typeof get>;
 
 const TEST_TAB_PRACTITIONER_TYPE_MAP: Record<string, string> = {
-  'Radiology Order': 'Radiology%20Technologist',
+  'Radiology Order': 'Radiology Technologist',
   'Rehab Order': 'Physiotherapist',
-  'P&O Order': 'P%26O%20Technician',
-  'Speech Therapy Order': 'Speech%20Therapist',
-  'Audiology Order': 'Audiology%20technician',
+  'P&O Order': 'P&O Technician',
+  'Speech Therapy Order': 'Speech Therapist',
+  'Audiology Order': 'Audiology technician',
 };
 
 describe('providerService', () => {

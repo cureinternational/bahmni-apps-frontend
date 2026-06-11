@@ -57,7 +57,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
   const [lmpData, setLmpData] = useState<ObservationData | null>(null);
-  const { lmpConfig, tabPractitionerTypeMap } = ordersTableConfig ?? {};
+  const { lmpConfig } = ordersTableConfig ?? {};
   const lmpThreshold = lmpConfig?.threshold ?? 0;
   const lmpDateConcept = lmpConfig?.lmpDateConcept;
   const lmpTabLabels = lmpConfig?.tabLabels;
@@ -102,7 +102,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   useEffect(() => {
     if (isOpen && order) {
       if (tabLabel) {
-        fetchProviders(tabLabel, tabPractitionerTypeMap);
+        fetchProviders(tabLabel);
       }
       const initialStatus =
         order.status === 'New'
@@ -116,7 +116,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
       setStatus('');
       setOwner('');
     }
-  }, [isOpen, order, tabLabel, fetchProviders, tabPractitionerTypeMap]);
+  }, [isOpen, order, tabLabel, fetchProviders]);
 
   useEffect(() => {
     if (tabLabel && providers[tabLabel] && providers[tabLabel].length > 0) {

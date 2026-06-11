@@ -30,7 +30,8 @@ export const fetchProvidersByTab = async (
   }
 
   try {
-    const url = `${ORDERS_BASE_URL}${PROVIDER_ENDPOINT_PATTERN}${practitionerType}`;
+    const encodedPractitionerType = encodeURIComponent(practitionerType);
+    const url = `${ORDERS_BASE_URL}${PROVIDER_ENDPOINT_PATTERN}${encodedPractitionerType}`;
     const response = await get<ProviderResponse>(url);
 
     if (response?.results && Array.isArray(response.results)) {
