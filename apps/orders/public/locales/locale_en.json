@@ -6,6 +6,7 @@
   "LABEL_DRUG_ORDERS_KEY": "OPD Drugs",
   "LABEL_IPD_DRUG_ORDERS_KEY": "IPD Drugs",
   "LABEL_P&O_ORDERS_KEY": "Prosthetics and Orthotics",
+  "LABEL_ENT_ORDERS_KEY": "ENT",
   "PATIENT_NAME": "Patient Name",
   "IDENTIFIER": "Identifier",
   "ORDERS": "Orders",

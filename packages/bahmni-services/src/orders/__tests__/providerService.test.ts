@@ -302,6 +302,17 @@ describe('providerService', () => {
         );
       });
 
+      it('should construct correct URL for ENT', async () => {
+        mockGet.mockReset();
+        mockGet.mockResolvedValueOnce({ results: [] });
+
+        await fetchProvidersByTab('ENT');
+
+        expect(mockGet).toHaveBeenCalledWith(
+          expect.stringContaining('attrValue=ENT%20Nurse'),
+        );
+      });
+
       it('should include all required query parameters', async () => {
         mockGet.mockReset();
         mockGet.mockResolvedValueOnce({ results: [] });
