@@ -133,6 +133,13 @@ describe('OrdersConfigProvider', () => {
 
   describe('Configuration Loading Tests', () => {
     test('should load and provide configuration successfully', async () => {
+      const hasBeenAdmittedConfig = {
+        key: 'hasBeenAdmitted',
+        header: '',
+        translationKey: '',
+        visible: true,
+        sortable: false,
+      };
       const mockTableConfig: OrdersTableConfig = {
         ordersTableColumnHeadersGeneric: [
           {
@@ -174,6 +181,14 @@ describe('OrdersConfigProvider', () => {
           },
         ],
       };
+      const expectedGenericColumns = [
+        ...mockTableConfig.ordersTableColumnHeadersGeneric,
+        hasBeenAdmittedConfig,
+      ];
+      const expectedCustomColumns = [
+        ...mockTableConfig.ordersTableColumnHeadersCustom,
+        hasBeenAdmittedConfig,
+      ];
 
       mockGetConfig.mockResolvedValueOnce(
         configMocks.validFullOrdersConfig as OrdersConfig,
@@ -197,10 +212,10 @@ describe('OrdersConfigProvider', () => {
       expect(screen.getByTestId('tabs-data').textContent).not.toBe('No tabs');
       expect(
         screen.getByTestId('orders-table-column-headers-Generic').textContent,
-      ).toBe(JSON.stringify(mockTableConfig.ordersTableColumnHeadersGeneric));
+      ).toBe(JSON.stringify(expectedGenericColumns));
       expect(
         screen.getByTestId('orders-table-column-headers-Custom').textContent,
-      ).toBe(JSON.stringify(mockTableConfig.ordersTableColumnHeadersCustom));
+      ).toBe(JSON.stringify(expectedCustomColumns));
     });
 
     test('should handle minimal configuration', async () => {
