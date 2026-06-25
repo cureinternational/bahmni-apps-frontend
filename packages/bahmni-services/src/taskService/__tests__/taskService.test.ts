@@ -124,6 +124,26 @@ describe('taskService', () => {
     });
   });
 
+  it('includes code in payload when conceptUuid is provided', async () => {
+    (post as jest.Mock).mockResolvedValueOnce({});
+
+    await createTask('order-uuid', 'accepted', {
+      conceptUuid: 'concept-uuid-123',
+    });
+
+    const payload = (post as jest.Mock).mock.calls[0][1];
+    expect(payload.code).toEqual({ coding: [{ code: 'concept-uuid-123' }] });
+  });
+
+  it('omits code from payload when conceptUuid is not provided', async () => {
+    (post as jest.Mock).mockResolvedValueOnce({});
+
+    await createTask('order-uuid', 'accepted');
+
+    const payload = (post as jest.Mock).mock.calls[0][1];
+    expect(payload.code).toBeUndefined();
+  });
+
   it('propagates errors from the API', async () => {
     (post as jest.Mock).mockRejectedValueOnce(new Error('API Error'));
 

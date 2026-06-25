@@ -206,6 +206,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
         ownerUuid: owner || undefined,
         encounterUuid: encounterUuid ?? undefined,
         patientUuid: order.patientUuid,
+        conceptUuid: ordersTableConfig?.orderFulfillmentConceptUuid,
       });
       addNotification({
         title: t('ORDER_SAVE_SUCCESS'),
