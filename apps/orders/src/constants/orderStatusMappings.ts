@@ -13,7 +13,6 @@ export const UI_STATUS_TO_FHIR_TASK_STATUS: Partial<
   Completed: 'completed',
   'Ready for Pickup': 'ready',
   'On Hold': 'on-hold',
-  Cancelled: 'cancelled',
 };
 
 /**
@@ -28,7 +27,6 @@ export const FHIR_TASK_STATUS_TO_UI_STATUS: Record<string, OrderStatus> = {
   rejected: 'New',
   ready: 'Ready for Pickup',
   onhold: 'On Hold',
-  cancelled: 'Cancelled',
 };
 
 /**
