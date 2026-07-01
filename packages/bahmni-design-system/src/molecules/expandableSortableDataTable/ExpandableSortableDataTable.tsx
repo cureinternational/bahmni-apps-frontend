@@ -127,7 +127,8 @@ export const ExpandableSortableDataTable = <
                       {...headerProps}
                       key={header.key}
                       className={classnames({
-                        [headerProps.className as string]: !!headerProps.className,
+                        [headerProps.className as string]:
+                          !!headerProps.className,
                         [styles.nonSortableHeader]: !isSortable,
                       })}
                     >
@@ -138,7 +139,8 @@ export const ExpandableSortableDataTable = <
               </TableRow>
             </TableHead>
             <TableBody>
-              {tableRows.length > 0 && tableRows.map((row) => {
+              {tableRows.length > 0 &&
+                tableRows.map((row) => {
                   const originalRow = rowMap.get(row.id);
 
                   if (!originalRow) {
@@ -157,7 +159,7 @@ export const ExpandableSortableDataTable = <
                           isRowExpandable ? rowProps.isExpanded : false
                         }
                         onExpand={
-                          isRowExpandable ? rowProps.onExpand : (() => {})
+                          isRowExpandable ? rowProps.onExpand : () => {}
                         }
                         aria-label={`Expand row ${row.id}`}
                         className={classnames({
