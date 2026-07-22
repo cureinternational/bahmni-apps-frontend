@@ -1,6 +1,8 @@
-import { createRoot, type Root } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import { initAppI18n } from '@bahmni/services';
+import { createRoot, type Root } from 'react-dom/client';
+
+import { BrowserRouter } from 'react-router-dom';
+
 import commandPaletteStyles from 'virtual:command-palette-styles?inline';
 import { CommandPaletteProvider } from './components/CommandPaletteProvider';
 import { BAHMNI_COMMAND_PALETTE_NAMESPACE } from './constants/app';

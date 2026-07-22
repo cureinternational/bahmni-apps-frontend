@@ -63,7 +63,6 @@ describe('standalone entry', () => {
     await act(async () => {
       await import('../standalone');
     });
-
-    expect(document.querySelectorAll(TAG_NAME).length).toBe(1);
+    expect(document.querySelectorAll(TAG_NAME)).toHaveLength(1);
   });
 });
