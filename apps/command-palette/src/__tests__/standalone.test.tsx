@@ -10,6 +10,13 @@ jest.mock('@bahmni/widgets', () => ({
   CommandPaletteProvider: (props: unknown) => mockWidgetProvider(props),
 }));
 
+// Avoid the real i18n loader making a network request for translation
+// files, which is slow/unreliable in CI and unrelated to what this test
+// covers (custom element registration and shadow-root mounting).
+jest.mock('@bahmni/services', () => ({
+  initAppI18n: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock('../hooks/useCommandPaletteConfig', () => ({
   useCommandPaletteConfig: () => ({
     navItems: [],
