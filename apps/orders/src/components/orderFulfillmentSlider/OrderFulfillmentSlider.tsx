@@ -62,11 +62,12 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const lmpThreshold = lmpConfig?.threshold ?? 0;
   const lmpDateConcept = lmpConfig?.lmpDateConcept;
   const lmpTabLabels = lmpConfig?.tabLabels;
+  const lmpThresholdAge = lmpConfig?.ageThreshold ?? 9;
 
   const isLmpEligible = !!(
     lmpConfig &&
     order?.patient?.gender === 'F' &&
-    parseAgeYears(order?.patient?.age) >= 10 &&
+    parseAgeYears(order?.patient?.age) >= lmpThresholdAge &&
     (!lmpTabLabels?.length || lmpTabLabels.includes(tabLabel))
   );
 
@@ -137,7 +138,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     let isMounted = true;
 
     if (isOpen && isLmpEligible && order?.patientUuid) {
-      if (prefetchedLmpData !== undefined) {
+      if (prefetchedLmpData !== undefined && prefetchedLmpData !== null) {
         setLmpData(prefetchedLmpData);
         setIsLmpLoading(false);
       } else {
