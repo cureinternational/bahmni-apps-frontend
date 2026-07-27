@@ -36,6 +36,7 @@ export interface LmpConfig {
   lmpDateConcept: string;
   threshold?: number;
   tabLabels?: string[];
+  ageThreshold?: number;
 }
 
 /**
