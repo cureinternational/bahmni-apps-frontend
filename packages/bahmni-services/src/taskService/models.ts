@@ -7,6 +7,7 @@ export interface CreateTaskPayload {
   note?: Array<{ text: string }>;
   owner?: { reference: string };
   encounter?: { reference: string };
+  code?: { coding: Array<{ code: string }> };
 }
 
 export interface CreateTaskOptions {
@@ -14,4 +15,5 @@ export interface CreateTaskOptions {
   ownerUuid?: string;
   encounterUuid?: string;
   patientUuid?: string;
+  conceptUuid?: string;
 }

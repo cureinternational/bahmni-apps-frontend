@@ -8,14 +8,14 @@ import { CreateTaskOptions, CreateTaskPayload } from './models';
  *
  * @param orderUuid - The UUID of the order (ServiceRequest) being acted upon
  * @param fhirStatus - FHIR Task status string (e.g. 'requested', 'accepted', 'completed')
- * @param options - Optional fields: notes, ownerUuid, encounterUuid, patientUuid
+ * @param options - Optional fields: notes, ownerUuid, encounterUuid, patientUuid, conceptUuid
  */
 export async function createTask(
   orderUuid: string,
   fhirStatus: string,
   options: CreateTaskOptions = {},
 ): Promise<void> {
-  const { notes, ownerUuid, encounterUuid, patientUuid } = options;
+  const { notes, ownerUuid, encounterUuid, patientUuid, conceptUuid } = options;
 
   const payload: CreateTaskPayload = {
     resourceType: 'Task',
@@ -23,6 +23,10 @@ export async function createTask(
     status: fhirStatus,
     basedOn: [{ reference: `ServiceRequest/${orderUuid}` }],
   };
+
+  if (conceptUuid) {
+    payload.code = { coding: [{ code: conceptUuid }] };
+  }
 
   if (patientUuid) {
     payload.for = { reference: `Patient/${patientUuid}` };
