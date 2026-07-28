@@ -1532,6 +1532,76 @@ describe('OrderFulfillmentSlider', () => {
   });
 
   describe('LMP (Last Menstrual Period) Display', () => {
+    it('respects lmpConfig.ageThreshold and does not show LMP for younger patients', async () => {
+      useOrdersConfig.mockReturnValue({
+        ordersTableConfig: {
+          ...mockConfig.ordersTableConfig,
+          lmpConfig: {
+            lmpDateConcept: 'LMP Date',
+            threshold: 28,
+            tabLabels: ['Radiology Order'],
+            ageThreshold: 18,
+          },
+        },
+      });
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.queryByTestId('observation-days-display'),
+        ).not.toBeInTheDocument();
+      });
+    });
+
+    it('shows observation section when patient meets lmpConfig.ageThreshold', async () => {
+      // Set ageThreshold to 10 so 15-year-old patient is eligible
+      useOrdersConfig.mockReturnValue({
+        ordersTableConfig: {
+          ...mockConfig.ordersTableConfig,
+          lmpConfig: {
+            lmpDateConcept: 'LMP Date',
+            threshold: 28,
+            tabLabels: ['Radiology Order'],
+            ageThreshold: 10,
+          },
+        },
+      });
+
+      (mockGetObservationByConceptName as jest.Mock).mockResolvedValueOnce({
+        date: '2024-01-01',
+        daysSince: 20,
+      });
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+        />,
+      );
+
+      await waitFor(() => {
+        expect(mockGetObservationByConceptName).toHaveBeenCalledWith(
+          'patient-uuid-1',
+          'LMP Date',
+        );
+        expect(
+          screen.getByTestId('observation-days-display'),
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('observation-days-value')).toHaveTextContent(
+          '20',
+        );
+      });
+    });
+
     it('fetches observation data when radiology slider opens with config', async () => {
       useOrdersConfig.mockReturnValue(mockConfig);
       (mockGetObservationByConceptName as jest.Mock).mockResolvedValueOnce({

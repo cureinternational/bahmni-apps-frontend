@@ -36,6 +36,7 @@ export interface LmpConfig {
   lmpDateConcept: string;
   threshold?: number;
   tabLabels?: string[];
+  ageThreshold?: number;
 }
 
 /**
@@ -49,6 +50,7 @@ export interface OrdersTableConfig {
   orderStatusesAvailable?: OrderStatusOption[];
   orderStatusesPreSelected?: OrderStatusOption[];
   fulfillmentEncounterTypeUuid?: string;
+  orderFulfillmentConceptUuid?: string;
   lmpConfig?: LmpConfig;
   tabPractitionerTypeMap?: Record<string, string>;
 }
