@@ -153,7 +153,7 @@ export const getOrdersTableConfig =
  * @returns Validated configuration object or null if invalid/error
  * @throws Error if fetch fails or validation fails
  */
-const getConfig = async <T>(
+export const getConfig = async <T>(
   configPath: string,
   configSchema: Record<string, unknown>,
 ): Promise<T | null> => {

@@ -18,6 +18,7 @@ const config = [
       '**/*.stories.{js,jsx,ts,tsx}',
       'build/**',
       'dist/**',
+      '**/dist-standalone/**',
       'node_modules/**',
       'coverage/**',
       '**/coverage/**',
