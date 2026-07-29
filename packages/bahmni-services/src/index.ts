@@ -178,6 +178,7 @@ export {
 } from './investigationService';
 
 export {
+  getConfig,
   getClinicalConfig,
   getDashboardConfig,
   getMedicationConfig,
@@ -206,6 +207,16 @@ export {
   type OrderStatusOption,
   type TabStatus,
 } from './configService';
+
+export {
+  fetchModuleExtensions,
+  getExtensionsByPoint,
+  filterByPrivilege,
+  filterByOnlineStatus,
+  sortByOrder,
+  getVisibleModules,
+  type Module,
+} from './moduleService';
 
 export { getCurrentUser, getUserLoginLocation, type User } from './userService';
 export { USER_PINNED_PREFERENCE_URL } from './observationFormsService/constants';
