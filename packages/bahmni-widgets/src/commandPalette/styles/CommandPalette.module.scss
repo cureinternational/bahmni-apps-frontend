@@ -160,6 +160,7 @@
 
   &:global([data-selected='true']) {
     background: $layer-selected-02;
+    
 
     .itemActions {
       opacity: 1;
@@ -324,7 +325,7 @@
 
   &:hover {
     filter: brightness(0.9);
-    color: $text-on-color;
+    color: $text-primary;
   }
 }
 
