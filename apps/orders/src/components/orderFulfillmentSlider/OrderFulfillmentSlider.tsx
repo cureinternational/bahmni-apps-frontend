@@ -76,7 +76,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
       return { show: false };
     }
 
-      if (isLmpLoading) {
+    if (isLmpLoading) {
       return {
         show: true,
         message: t('LOADING_LMP_DATE'),
@@ -140,7 +140,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     if (isOpen && isLmpEligible && order?.patientUuid) {
       if (prefetchedLmpData !== undefined && prefetchedLmpData !== null) {
         setLmpData(prefetchedLmpData);
-        setIsLmpLoading(false)
+        setIsLmpLoading(false);
       } else {
         setIsLmpLoading(true);
         getObservationByConceptName(order.patientUuid, lmpDateConcept!)
