@@ -1,5 +1,3 @@
-import '@carbon/styles/css/styles.css';
-
 export { Close } from '@carbon/icons-react';
 
 export { Button, type ButtonProps } from './atoms/button';
