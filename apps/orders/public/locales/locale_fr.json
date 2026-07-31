@@ -48,5 +48,6 @@
   "ORDER_SAVE_ERROR": "Échec de la mise à jour des détails de l'ordonnance",
   "DAYS_SINCE_LMP": "Jours depuis les dernières règles",
   "OBSERVATION_NOT_RECORDED": "Date des dernières règles non enregistrée",
-  "NOT_YET_MENSTRUATING": "N'a pas encore commencé à avoir ses règles"
+  "NOT_YET_MENSTRUATING": "N'a pas encore commencé à avoir ses règles",
+  "LOADING_LMP_DATE": "Chargement de la date LMP"
 }
