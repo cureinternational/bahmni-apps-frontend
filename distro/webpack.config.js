@@ -1,6 +1,7 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { NxReactWebpackPlugin } = require('@nx/react/webpack-plugin');
 const { InjectManifest } = require('workbox-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const { join } = require('path');
 
@@ -21,6 +22,7 @@ module.exports = (env, argv) => {
         '@bahmni/clinical-app': join(__dirname, '../apps/clinical/src'),
         '@bahmni/registration-app': join(__dirname, '../apps/registration/src'),
         '@bahmni/orders-app': join(__dirname, '../apps/orders/src'),
+        '@bahmni/command-palette-app': join(__dirname, '../apps/command-palette/src'),
       } : {},
     },
     devServer: {
@@ -55,7 +57,8 @@ module.exports = (env, argv) => {
           './src/assets',
           { input: isDevelopment ? '../apps/clinical/public/locales' : '../apps/clinical/dist/locales', glob: '**/*', output: 'clinical/locales' },
           { input: isDevelopment ? '../apps/registration/public/locales' : '../apps/registration/dist/locales', glob: '**/*', output: 'registration/locales' },
-          { input: isDevelopment ? '../apps/orders/public/locales' : '../apps/orders/dist/locales', glob: '**/*', output: 'orders/locales' }
+          { input: isDevelopment ? '../apps/orders/public/locales' : '../apps/orders/dist/locales', glob: '**/*', output: 'orders/locales' },
+          { input: isDevelopment ? '../apps/command-palette/public/locales' : '../apps/command-palette/dist/locales', glob: '**/*', output: 'command-palette/locales' },
         ],
         styles: ['./src/styles.scss'],
         outputHashing:
@@ -66,6 +69,18 @@ module.exports = (env, argv) => {
         // Uncomment this line if you don't want to use SVGR
         // See: https://react-svgr.com/
         // svgr: false
+      }),
+      // info: { minimized: true } stops TerserPlugin from re-processing (and corrupting)
+      // this already-minified bundle. See docs/command-palette-angular-integration.md.
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            context: join(__dirname, '../apps/command-palette/dist-standalone'),
+            from: 'command-palette.js',
+            to: '.',
+            info: { minimized: true },
+          },
+        ],
       }),
       ...(!isDevelopment ? [
         new InjectManifest({
