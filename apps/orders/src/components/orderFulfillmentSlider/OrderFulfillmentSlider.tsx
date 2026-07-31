@@ -79,7 +79,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     if (isLmpLoading) {
       return {
         show: true,
-        message: t('LOADING'),
+        message: t('LOADING_LMP_DATE'),
         className: styles.observationLoading,
       };
     }
