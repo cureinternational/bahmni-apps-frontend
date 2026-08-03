@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './app/app';
 import { PUBLIC_PATH } from './constants/app';
+import '@carbon/styles/css/styles.css';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
