@@ -2,23 +2,42 @@
 @use "@carbon/react/scss/spacing" as *;
 @use "@carbon/react/scss/theme" as *;
 
+th:has(.statusHeader) {
+  padding: 0 !important;
+
+  :global(.cds--table-sort) {
+    pointer-events: all !important;
+    padding: 0 !important;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  :global(.cds--table-header-label) {
+    position: relative;
+    inline-size: 100%;
+    block-size: 100%;
+    box-sizing: border-box;
+  }
+}
+
 .statusHeader {
-  position: relative;
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  padding-inline: 1rem;
+  cursor: pointer;
 }
 
 .statusCaret {
   display: inline;
   vertical-align: middle;
-  pointer-events: all;
   opacity: 0.7;
   transition: opacity 0.2s;
-  cursor: pointer;
 
-  &:hover {
+  .statusHeader:hover & {
     opacity: 1;
   }
 }
