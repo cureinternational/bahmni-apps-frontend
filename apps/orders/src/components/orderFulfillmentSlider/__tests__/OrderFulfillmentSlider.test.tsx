@@ -1764,5 +1764,46 @@ describe('OrderFulfillmentSlider', () => {
         expect(mockGetObservationByConceptName).not.toHaveBeenCalled();
       });
     });
+
+    it('should show as loading lmp data before loading the date', async () => {
+      useOrdersConfig.mockReturnValue(mockConfig);
+
+      // Mock getObservationByConceptName to delay resolution, simulating a fetch
+      (mockGetObservationByConceptName as jest.Mock).mockImplementationOnce(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () => resolve({ date: '2024-01-15', daysSince: 30 }),
+              100,
+            ),
+          ),
+      );
+
+      renderWithIntl(
+        <OrderFulfillmentSlider
+          order={mockRadiologyOrderEligibleForLmp}
+          onClose={mockOnClose}
+          isOpen
+          tabLabel="Radiology Order"
+        />,
+      );
+
+      // Initially should show loading message
+      await waitFor(() => {
+        expect(screen.getByTestId('observation-days-value')).toHaveTextContent(
+          'LOADING_LMP_DATE',
+        );
+      });
+
+      // After data loads, should show the actual days value instead of loading message
+      await waitFor(() => {
+        expect(screen.getByTestId('observation-days-value')).toHaveTextContent(
+          '30',
+        );
+        expect(
+          screen.getByTestId('observation-days-value'),
+        ).not.toHaveTextContent('LOADING_LMP_DATE');
+      });
+    });
   });
 });

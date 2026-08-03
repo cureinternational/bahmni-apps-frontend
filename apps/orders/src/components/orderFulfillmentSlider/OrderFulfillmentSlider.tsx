@@ -57,6 +57,7 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [currentProviders, setCurrentProviders] = useState<Provider[]>([]);
   const [lmpData, setLmpData] = useState<ObservationData | null>(null);
+  const [isLmpLoading, setIsLmpLoading] = useState(false);
   const { lmpConfig } = ordersTableConfig ?? {};
   const lmpThreshold = lmpConfig?.threshold ?? 0;
   const lmpDateConcept = lmpConfig?.lmpDateConcept;
@@ -75,7 +76,15 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
       return { show: false };
     }
 
-    if (lmpData?.daysSince !== undefined && lmpData.daysSince !== null) {
+    if (isLmpLoading) {
+      return {
+        show: true,
+        message: t('LOADING_LMP_DATE'),
+        className: styles.observationLoading,
+      };
+    }
+
+    if (lmpData?.daysSince !== undefined) {
       return {
         show: true,
         message: `${lmpData.daysSince}`,
@@ -131,21 +140,26 @@ export const OrderFulfillmentSlider: React.FC<OrderFulfillmentSliderProps> = ({
     if (isOpen && isLmpEligible && order?.patientUuid) {
       if (prefetchedLmpData !== undefined && prefetchedLmpData !== null) {
         setLmpData(prefetchedLmpData);
+        setIsLmpLoading(false);
       } else {
+        setIsLmpLoading(true);
         getObservationByConceptName(order.patientUuid, lmpDateConcept!)
           .then((result) => {
             if (isMounted) {
               setLmpData(result as ObservationData | null);
+              setIsLmpLoading(false);
             }
           })
           .catch(() => {
             if (isMounted) {
               setLmpData(null);
+              setIsLmpLoading(false);
             }
           });
       }
     } else if (!isOpen) {
       setLmpData(null);
+      setIsLmpLoading(false);
     }
 
     return () => {

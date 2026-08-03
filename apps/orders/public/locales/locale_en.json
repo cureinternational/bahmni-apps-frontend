@@ -49,5 +49,6 @@
   "ORDER_SAVE_SUCCESS": "Order details updated successfully",
   "ORDER_SAVE_ERROR": "Failed to update order details",
   "OBSERVATION_NOT_RECORDED": "LMP date not recorded",
-  "NOT_YET_MENSTRUATING": "Not yet menstruating"
+  "NOT_YET_MENSTRUATING": "Not yet menstruating",
+  "LOADING_LMP_DATE": "Loading LMP Date"
 }

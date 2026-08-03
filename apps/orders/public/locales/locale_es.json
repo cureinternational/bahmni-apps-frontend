@@ -48,5 +48,6 @@
   "ORDER_SAVE_ERROR": "Error al actualizar los detalles de la orden",
   "DAYS_SINCE_LMP": "Días desde la FUM",
   "OBSERVATION_NOT_RECORDED": "Fecha de FUM no registrada",
-  "NOT_YET_MENSTRUATING": "Aún no ha comenzado a menstruar"
+  "NOT_YET_MENSTRUATING": "Aún no ha comenzado a menstruar",
+  "LOADING_LMP_DATE": "Cargando fecha LMP"
 }
