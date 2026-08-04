@@ -224,25 +224,33 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
           ...h,
           header: (
             <span ref={statusHeaderRef} className={styles.statusHeader}>
-              {h.header}
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className={styles.statusCaret}
-                aria-hidden="true"
-                onClick={toggleStatusFilter}
+              <div
+                className={styles.statusFilterTrigger}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  toggleStatusFilter();
+                }}
               >
-                <path
-                  d="M4 6L8 10L12 6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+                {h.header}
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={styles.statusCaret}
+                  aria-hidden="true"
+                  data-testid="status-filter-caret"
+                >
+                  <path
+                    d="M4 6L8 10L12 6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
               <StatusFilter
                 availableStatuses={availableStatuses}
                 selectedStatuses={selectedStatuses}

@@ -542,4 +542,46 @@ describe('OrdersFulfillmentTable', () => {
       expect(container).toBeInTheDocument();
     });
   });
+
+  describe('Status filter expanded click target', () => {
+    it('opens the status filter when clicking the Status header label', () => {
+      render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+      fireEvent.click(screen.getByText('Status'));
+
+      expect(screen.getByLabelText('STATUS_NEW')).toBeInTheDocument();
+      expect(screen.getByText('APPLY')).toBeInTheDocument();
+    });
+
+    it('opens the status filter when clicking the caret', () => {
+      render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+      fireEvent.click(screen.getByTestId('status-filter-caret'));
+
+      expect(screen.getByLabelText('STATUS_NEW')).toBeInTheDocument();
+    });
+
+    it('does not trigger column sorting when the status header is clicked', () => {
+      render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+      const statusTh = screen.getByText('Status').closest('th');
+      expect(statusTh).toHaveAttribute('aria-sort', 'none');
+
+      fireEvent.click(screen.getByText('Status'));
+
+      expect(statusTh).toHaveAttribute('aria-sort', 'none');
+    });
+
+    it('keeps the dropdown open when a status checkbox is clicked', () => {
+      render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+      fireEvent.click(screen.getByText('Status'));
+      expect(screen.getByLabelText('STATUS_NEW')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText('STATUS_NEW'));
+
+      expect(screen.getByLabelText('STATUS_NEW')).toBeChecked();
+      expect(screen.getByText('APPLY')).toBeInTheDocument();
+    });
+  });
 });
