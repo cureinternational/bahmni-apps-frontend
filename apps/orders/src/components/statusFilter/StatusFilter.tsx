@@ -96,6 +96,10 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({
     <div
       ref={dropdownRef}
       className={styles.filterDropdown}
+      // Portals still bubble clicks through the React tree, not the DOM tree,
+      // so without this the header's onClick (toggleStatusFilter) fires again
+      // for every click inside the dropdown and closes it immediately.
+      onClick={(e) => e.stopPropagation()}
       // eslint-disable-next-line react/forbid-dom-props -- Dynamic positioning requires inline styles
       style={
         {
