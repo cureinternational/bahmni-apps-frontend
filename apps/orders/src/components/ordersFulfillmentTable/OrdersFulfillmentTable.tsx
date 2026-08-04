@@ -243,11 +243,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
         return {
           ...h,
           header: (
-            <span
-              ref={statusHeaderRef}
-              className={styles.statusHeader}
-              onClick={toggleStatusFilter}
-            >
+            <span ref={statusHeaderRef} className={styles.statusHeader}>
               {h.header}
               <svg
                 width="16"
@@ -257,6 +253,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
                 className={styles.statusCaret}
                 aria-hidden="true"
+                onClick={toggleStatusFilter}
               >
                 <path
                   d="M4 6L8 10L12 6"
