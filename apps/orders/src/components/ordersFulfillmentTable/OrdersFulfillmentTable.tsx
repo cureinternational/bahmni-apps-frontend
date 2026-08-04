@@ -40,8 +40,9 @@ interface OrdersFulfillmentTableProps {
   isSliderOpen?: boolean;
   contentScrollRef?: React.RefObject<HTMLDivElement | null>;
   onOrderClick?: (orderId: string) => void;
-  searchTerm?: string;
   tabStatuses?: TabStatus;
+  selectedStatuses?: OrderStatusConfig[];
+  onStatusFilterApply?: (statuses: OrderStatusConfig[]) => void;
   onPatientExpand?: (
     patientUuid: string,
     lmpData: ObservationData | null,
@@ -56,8 +57,9 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   isSliderOpen = false,
   contentScrollRef,
   onOrderClick,
-  searchTerm = '',
   tabStatuses,
+  selectedStatuses = [],
+  onStatusFilterApply = () => {},
   onPatientExpand,
 }) => {
   const { t } = useTranslation();
@@ -72,32 +74,10 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
 
-  const effectivePreSelected = (tabStatuses?.preSelected ??
-    ordersTableConfig?.orderStatusesPreSelected ??
-    []) as OrderStatusConfig[];
-
-  const [selectedStatuses, setSelectedStatuses] =
-    useState<OrderStatusConfig[]>(effectivePreSelected);
-
-  const isSearchActive = searchTerm && searchTerm.trim().length >= 3;
-
-  useEffect(() => {
-    if (isSearchActive) {
-      setSelectedStatuses([]);
-    } else {
-      setSelectedStatuses(effectivePreSelected);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSearchActive]);
-
   // Clear LMP fetch cache when orders refresh or tab changes
   useEffect(() => {
     fetchedPatientUuids.current = new Set();
   }, [rows, selectedIndex]);
-
-  const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
-    setSelectedStatuses(statuses);
-  };
 
   const toggleStatusFilter = useCallback(() => {
     setIsStatusFilterOpen(!isStatusFilterOpen);
@@ -266,7 +246,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
               <StatusFilter
                 availableStatuses={availableStatuses}
                 selectedStatuses={selectedStatuses}
-                onApply={handleStatusFilterApply}
+                onApply={onStatusFilterApply}
                 isOpen={isStatusFilterOpen}
                 onToggle={toggleStatusFilter}
                 anchorRef={statusHeaderRef}
@@ -285,6 +265,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     selectedStatuses,
     toggleStatusFilter,
     totalNewOrdersCount,
+    onStatusFilterApply,
   ]);
 
   const renderCell = (row: PatientOrderRow, cellId: string) => {

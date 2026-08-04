@@ -9,12 +9,17 @@ import {
 } from '@bahmni/design-system';
 import { useTranslation, TabStatus, ObservationData } from '@bahmni/services';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FilterChips } from '../components/filterChips';
 import { OrderFulfillmentSlider } from '../components/orderFulfillmentSlider';
 import { OrdersFulfillmentTable } from '../components/ordersFulfillmentTable';
 import { OrdersHeader } from '../components/ordersHeader/OrdersHeader';
 import { useOrdersConfig } from '../hooks/useOrdersConfig';
 import { useOrdersFulfillment } from '../hooks/useOrdersFulfillment';
-import { Order, PatientOrderRow } from '../models/orderFulfillment';
+import {
+  Order,
+  OrderStatusConfig,
+  PatientOrderRow,
+} from '../models/orderFulfillment';
 import { ORDER_PRIORITY } from '../models/ordersConfig';
 import useOrdersStore from '../stores/ordersStore';
 import styles from './styles/OrdersPage.module.scss';
@@ -47,7 +52,22 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 }) => {
   const { t } = useTranslation();
   const { headers, isLoading, isCustomOrderTab } = useOrdersFulfillment(view);
+  const { ordersTableConfig } = useOrdersConfig();
   const [searchInput, setSearchInput] = useState('');
+
+  const availableStatuses: OrderStatusConfig[] =
+    tabStatuses?.available ?? ordersTableConfig?.orderStatusesAvailable ?? [];
+
+  const effectivePreSelected: OrderStatusConfig[] =
+    tabStatuses?.preSelected ??
+    ordersTableConfig?.orderStatusesPreSelected ??
+    [];
+
+  const [selectedStatuses, setSelectedStatuses] =
+    useState<OrderStatusConfig[]>(effectivePreSelected);
+
+  const isSearchActive = searchInput.trim().length >= 3;
+  const visibleSelectedStatuses = isSearchActive ? [] : selectedStatuses;
 
   const { ordersData } = useOrdersStore();
   const handleOrderClick = (orderId: string) => {
@@ -109,18 +129,24 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
 
   return (
     <div className={styles.tabContent}>
-      <div className={styles.searchContainer}>
-        <Search
-          placeholder={t(
-            isCustomOrderTab
-              ? 'SEARCH_ORDERS_FOR_LAB_OR_DRUG_TAB_PLACEHOLDER'
-              : 'SEARCH_ORDERS_PLACEHOLDER',
-          )}
-          labelText={t('SEARCH_ORDERS_LABEL')}
-          closeButtonLabelText={t('CLEAR_SEARCH_INPUT')}
-          size="md"
-          value={searchInput}
-          onChange={handleSearchChange}
+      <div className={styles.filtersRow}>
+        <div className={styles.searchContainer}>
+          <Search
+            placeholder={t(
+              isCustomOrderTab
+                ? 'SEARCH_ORDERS_FOR_LAB_OR_DRUG_TAB_PLACEHOLDER'
+                : 'SEARCH_ORDERS_PLACEHOLDER',
+            )}
+            labelText={t('SEARCH_ORDERS_LABEL')}
+            closeButtonLabelText={t('CLEAR_SEARCH_INPUT')}
+            size="md"
+            value={searchInput}
+            onChange={handleSearchChange}
+          />
+        </div>
+        <FilterChips
+          selectedStatuses={isCustomOrderTab ? [] : visibleSelectedStatuses}
+          availableStatuses={availableStatuses}
         />
       </div>
       <div className={styles.ordersTable}>
@@ -132,9 +158,10 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
           isSliderOpen={isSliderOpen}
           contentScrollRef={contentScrollRef}
           onOrderClick={handleOrderClick}
-          searchTerm={searchInput}
           tabStatuses={tabStatuses}
           onPatientExpand={onPatientExpand}
+          selectedStatuses={visibleSelectedStatuses}
+          onStatusFilterApply={setSelectedStatuses}
         />
       </div>
     </div>

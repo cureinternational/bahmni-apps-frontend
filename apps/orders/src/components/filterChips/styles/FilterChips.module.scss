@@ -1,0 +1,19 @@
+@use "@carbon/react/scss/spacing" as *;
+
+.filterChips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $spacing-03;
+}
+
+.chip:global(.cds--tag) {
+  background-color: #393939;
+  color: #ffffff;
+  border-color:#393939;
+  cursor: default;
+
+  &:hover {
+    background-color:#393939;
+  }
+}

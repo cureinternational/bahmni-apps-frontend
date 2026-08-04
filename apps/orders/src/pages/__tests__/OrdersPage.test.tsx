@@ -5,9 +5,14 @@ import '@testing-library/jest-dom';
 import * as configMocks from '../../__mocks__/configMocks';
 import { rehabOrdersMockData } from '../../__mocks__/ordersMockData';
 import { ORDERS_SELECTED_TAB_STORAGE_KEY } from '../../constants/app';
+import { useOrdersFulfillment } from '../../hooks/useOrdersFulfillment';
 import { OrdersConfigProvider } from '../../providers/OrdersConfigProvider';
 import useOrdersStore from '../../stores/ordersStore';
 import { OrdersPage } from '../OrdersPage';
+
+const mockedUseOrdersFulfillment = useOrdersFulfillment as jest.MockedFunction<
+  typeof useOrdersFulfillment
+>;
 
 jest.mock('@bahmni/services', () => ({
   ...jest.requireActual('@bahmni/services'),
@@ -34,7 +39,7 @@ jest.mock('../../components/ordersHeader/OrdersHeader', () => ({
 }));
 
 jest.mock('../../hooks/useOrdersFulfillment', () => ({
-  useOrdersFulfillment: () => ({
+  useOrdersFulfillment: jest.fn(() => ({
     headers: [
       { key: 'badge', header: '' },
       { key: 'patientName', header: 'Patient Name' },
@@ -43,12 +48,21 @@ jest.mock('../../hooks/useOrdersFulfillment', () => ({
     isLoading: false,
     error: null,
     isCustomOrderTab: false,
-  }),
+  })),
 }));
 
 jest.mock('../../components/ordersFulfillmentTable', () => ({
-  OrdersFulfillmentTable: ({ rows }: { rows: any[] }) => (
-    <div data-testid="orders-fulfillment-table">
+  OrdersFulfillmentTable: ({
+    rows,
+    selectedStatuses,
+  }: {
+    rows: any[];
+    selectedStatuses?: any[];
+  }) => (
+    <div
+      data-testid="orders-fulfillment-table"
+      data-selected-count={selectedStatuses?.length ?? 0}
+    >
       {rows.map((row: any) => (
         <div
           key={row.id}
@@ -570,6 +584,129 @@ describe('OrdersPage Component', () => {
         expect(davidRow).toBeInTheDocument();
         expect(davidRow).toHaveAttribute('data-urgent-count', '1');
       });
+    });
+  });
+
+  describe('Filter Chips - Selected Statuses', () => {
+    beforeEach(() => {
+      getOrdersConfig.mockResolvedValue(configMocks.minimalOrdersConfig);
+      mockedUseTranslation.mockReturnValue({ t: (key: string) => key } as any);
+      getOrdersTableConfig.mockResolvedValue({
+        orderStatusesAvailable: [
+          { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
+          {
+            value: 'In Progress',
+            label: 'In Progress',
+            translationKey: 'STATUS_IN_PROGRESS',
+          },
+          {
+            value: 'Completed',
+            label: 'Completed',
+            translationKey: 'STATUS_COMPLETED',
+          },
+        ],
+        orderStatusesPreSelected: [
+          { value: 'New', label: 'New', translationKey: 'STATUS_NEW' },
+          {
+            value: 'In Progress',
+            label: 'In Progress',
+            translationKey: 'STATUS_IN_PROGRESS',
+          },
+        ],
+      });
+    });
+
+    afterEach(() => {
+      mockedUseOrdersFulfillment.mockImplementation(() => ({
+        headers: [
+          { key: 'badge', header: '' },
+          { key: 'patientName', header: 'Patient Name' },
+          { key: 'identifier', header: 'Identifier' },
+        ],
+        isLoading: false,
+        error: null,
+        isCustomOrderTab: false,
+      }));
+    });
+
+    const renderPage = () =>
+      render(
+        <OrdersConfigProvider>
+          <OrdersPage />
+        </OrdersConfigProvider>,
+      );
+
+    const waitForPage = () =>
+      waitFor(() =>
+        expect(screen.getByTestId('orders-header')).toBeInTheDocument(),
+      );
+
+    test('renders chips for preselected statuses on the generic tab', async () => {
+      renderPage();
+      await waitForPage();
+
+      expect(screen.getByText('STATUS_NEW')).toBeInTheDocument();
+      expect(screen.getByText('STATUS_IN_PROGRESS')).toBeInTheDocument();
+      expect(screen.getByTestId('filter-chips')).toBeInTheDocument();
+      expect(screen.getByTestId('orders-fulfillment-table')).toHaveAttribute(
+        'data-selected-count',
+        '2',
+      );
+    });
+
+    test('clears the selected statuses when a search of 3+ characters is active', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await waitForPage();
+
+      expect(screen.getByText('STATUS_NEW')).toBeInTheDocument();
+
+      await user.type(screen.getByRole('searchbox'), 'David');
+
+      expect(screen.queryByText('STATUS_NEW')).not.toBeInTheDocument();
+      expect(screen.getByTestId('filter-chips')).toBeInTheDocument();
+      expect(screen.getByTestId('filter-chips')).toBeEmptyDOMElement();
+      expect(screen.getByTestId('orders-fulfillment-table')).toHaveAttribute(
+        'data-selected-count',
+        '0',
+      );
+    });
+
+    test('restores preselected statuses when the search is cleared', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await waitForPage();
+
+      const searchInput = screen.getByRole('searchbox');
+      await user.type(searchInput, 'David');
+      expect(screen.queryByText('STATUS_NEW')).not.toBeInTheDocument();
+
+      await user.clear(searchInput);
+
+      await waitFor(() => {
+        expect(screen.getByText('STATUS_NEW')).toBeInTheDocument();
+        expect(screen.getByText('STATUS_IN_PROGRESS')).toBeInTheDocument();
+      });
+      expect(screen.getByTestId('orders-fulfillment-table')).toHaveAttribute(
+        'data-selected-count',
+        '2',
+      );
+    });
+
+    test('renders an empty filter chips container on custom order tabs', async () => {
+      mockedUseOrdersFulfillment.mockImplementation(() => ({
+        headers: [],
+        isLoading: false,
+        error: null,
+        isCustomOrderTab: true,
+      }));
+
+      renderPage();
+      await waitForPage();
+
+      expect(screen.queryByText('STATUS_NEW')).not.toBeInTheDocument();
+      expect(screen.getByTestId('filter-chips')).toBeInTheDocument();
+      expect(screen.getByTestId('filter-chips')).toBeEmptyDOMElement();
     });
   });
 });
