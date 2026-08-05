@@ -22,7 +22,7 @@
   "STATUS_READY_FOR_PICKUP": "Prêt à être récupéré",
   "STATUS_ON_HOLD": "En attente",
   "STATUS_CANCELLED": "Annulé",
-  "STATUS_FILTER_HEADING": "Statut sélectionné :",
+  "STATUS_FILTER_HEADING": "Statut sélectionné",
   "URGENT": "Urgent",
   "UNASSIGNED": "Non Assigné",
   "NO_ORDERS_FOUND": "Aucune ordonnance trouvée",

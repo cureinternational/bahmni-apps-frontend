@@ -33,7 +33,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
     >
       {statusesToRender.length > 0 && (
         <span className={styles.filterHeading}>
-          {t('STATUS_FILTER_HEADING')}
+          {t('STATUS_FILTER_HEADING') + ':'}
         </span>
       )}
       {statusesToRender.map((status) => (

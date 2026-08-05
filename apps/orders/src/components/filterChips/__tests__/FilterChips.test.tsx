@@ -44,7 +44,7 @@ describe('FilterChips', () => {
       />,
     );
     const chipsContainer = screen.getByTestId('filter-chips');
-    expect(screen.getByText('STATUS_FILTER_HEADING')).toBeInTheDocument();
+    expect(screen.getByText('STATUS_FILTER_HEADING:')).toBeInTheDocument();
     const chipElements = Array.from(
       chipsContainer.querySelectorAll('.cds--tag'),
     );
