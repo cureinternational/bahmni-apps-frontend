@@ -23,6 +23,7 @@
   "STATUS_READY_FOR_PICKUP": "Ready for Pickup",
   "STATUS_ON_HOLD": "On Hold",
   "STATUS_CANCELLED": "Cancelled",
+  "STATUS_FILTER_HEADING": "Status selected :",
   "URGENT": "Urgent",
   "UNASSIGNED": "Unassigned",
   "NO_ORDERS_FOUND": "No orders found",

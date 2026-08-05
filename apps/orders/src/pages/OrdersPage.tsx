@@ -58,13 +58,26 @@ const OrdersTabContent: React.FC<OrdersTabContentProps> = ({
   const availableStatuses: OrderStatusConfig[] =
     tabStatuses?.available ?? ordersTableConfig?.orderStatusesAvailable ?? [];
 
-  const effectivePreSelected: OrderStatusConfig[] =
-    tabStatuses?.preSelected ??
-    ordersTableConfig?.orderStatusesPreSelected ??
-    [];
+  const effectivePreSelected: OrderStatusConfig[] = useMemo(
+    () =>
+      (tabStatuses?.preSelected ??
+        ordersTableConfig?.orderStatusesPreSelected ??
+        []) as OrderStatusConfig[],
+    [tabStatuses, ordersTableConfig],
+  );
 
   const [selectedStatuses, setSelectedStatuses] =
     useState<OrderStatusConfig[]>(effectivePreSelected);
+
+  const preselectedAppliedRef = useRef(false);
+
+  useEffect(() => {
+    if (preselectedAppliedRef.current || effectivePreSelected.length === 0) {
+      return;
+    }
+    setSelectedStatuses(effectivePreSelected);
+    preselectedAppliedRef.current = true;
+  }, [effectivePreSelected]);
 
   const isSearchActive = searchInput.trim().length >= 3;
   const visibleSelectedStatuses = isSearchActive ? [] : selectedStatuses;
