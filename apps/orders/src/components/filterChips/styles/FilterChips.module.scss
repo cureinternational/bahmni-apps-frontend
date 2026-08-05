@@ -1,4 +1,5 @@
 @use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
 
 .filterChips {
   display: flex;
@@ -7,10 +8,17 @@
   gap: $spacing-03;
 }
 
+.filterHeading {
+  @include type-style("heading-compact-01");
+  color: #161616;
+  font-weight: 600;
+  margin: 0;
+}
+
 .chip:global(.cds--tag) {
   background-color: #393939;
   color: #ffffff;
-  border-color:#393939;
+  border-color: #393939;
   cursor: default;
 
   &:hover {

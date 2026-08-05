@@ -44,7 +44,10 @@ describe('FilterChips', () => {
       />,
     );
     const chipsContainer = screen.getByTestId('filter-chips');
-    const chipElements = Array.from(chipsContainer.children);
+    expect(screen.getByText('Status selected :')).toBeInTheDocument();
+    const chipElements = Array.from(
+      chipsContainer.querySelectorAll('.cds--tag'),
+    );
     expect(chipElements).toHaveLength(2);
     expect(chipElements[0].textContent).toBe('STATUS_NEW');
     expect(chipElements[1].textContent).toBe('STATUS_IN_PROGRESS');
@@ -63,7 +66,9 @@ describe('FilterChips', () => {
       />,
     );
     const chipsContainer = screen.getByTestId('filter-chips');
-    const chipElements = Array.from(chipsContainer.children);
+    const chipElements = Array.from(
+      chipsContainer.querySelectorAll('.cds--tag'),
+    );
     expect(chipElements).toHaveLength(2);
     expect(chipElements[0].textContent).toBe('STATUS_ON_HOLD');
     expect(chipElements[1].textContent).toBe('STATUS_NEW');

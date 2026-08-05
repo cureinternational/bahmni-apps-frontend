@@ -31,6 +31,9 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
       data-testid="filter-chips"
       role="status"
     >
+      {statusesToRender.length > 0 && (
+        <h3 className={styles.filterHeading}>Status selected :</h3>
+      )}
       {statusesToRender.map((status) => (
         <Tag key={status.value} type="cool-gray" className={styles.chip}>
           {t(status.translationKey)}
