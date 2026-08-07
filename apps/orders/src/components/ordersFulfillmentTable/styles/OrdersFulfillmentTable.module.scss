@@ -8,18 +8,56 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
+  padding-inline: 1rem;
+}
+
+.statusFilterTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  pointer-events: all;
+  cursor: pointer;
 }
 
 .statusCaret {
   display: inline;
   vertical-align: middle;
-  pointer-events: all;
   opacity: 0.7;
   transition: opacity 0.2s;
-  cursor: pointer;
 
-  &:hover {
+  .statusFilterTrigger:hover & {
     opacity: 1;
+  }
+}
+
+@supports selector(th:has(.statusHeader)) {
+  th:has(.statusHeader) {
+    padding: 0 !important;
+
+    :global(.cds--table-sort) {
+      pointer-events: all !important;
+      padding: 0 !important;
+      inline-size: 100%;
+      block-size: 100%;
+    }
+
+    :global(.cds--table-header-label) {
+      position: relative;
+      inline-size: 100%;
+      block-size: 100%;
+      box-sizing: border-box;
+    }
+  }
+
+  .statusHeader {
+    position: absolute;
+    inset: 0;
+  }
+
+  .statusFilterTrigger {
+    inline-size: 100%;
+    block-size: 100%;
   }
 }
 

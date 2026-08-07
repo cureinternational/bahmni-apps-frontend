@@ -40,8 +40,9 @@ interface OrdersFulfillmentTableProps {
   isSliderOpen?: boolean;
   contentScrollRef?: React.RefObject<HTMLDivElement | null>;
   onOrderClick?: (orderId: string) => void;
-  searchTerm?: string;
   tabStatuses?: TabStatus;
+  selectedStatuses?: OrderStatusConfig[];
+  onStatusFilterApply?: (statuses: OrderStatusConfig[]) => void;
   onPatientExpand?: (
     patientUuid: string,
     lmpData: ObservationData | null,
@@ -56,8 +57,9 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   isSliderOpen = false,
   contentScrollRef,
   onOrderClick,
-  searchTerm = '',
   tabStatuses,
+  selectedStatuses = [],
+  onStatusFilterApply = () => {},
   onPatientExpand,
 }) => {
   const { t } = useTranslation();
@@ -72,32 +74,10 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const { selectedIndex } = useOrdersStore();
 
-  const effectivePreSelected = (tabStatuses?.preSelected ??
-    ordersTableConfig?.orderStatusesPreSelected ??
-    []) as OrderStatusConfig[];
-
-  const [selectedStatuses, setSelectedStatuses] =
-    useState<OrderStatusConfig[]>(effectivePreSelected);
-
-  const isSearchActive = searchTerm && searchTerm.trim().length >= 3;
-
-  useEffect(() => {
-    if (isSearchActive) {
-      setSelectedStatuses([]);
-    } else {
-      setSelectedStatuses(effectivePreSelected);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSearchActive]);
-
   // Clear LMP fetch cache when orders refresh or tab changes
   useEffect(() => {
     fetchedPatientUuids.current = new Set();
   }, [rows, selectedIndex]);
-
-  const handleStatusFilterApply = (statuses: OrderStatusConfig[]) => {
-    setSelectedStatuses(statuses);
-  };
 
   const toggleStatusFilter = useCallback(() => {
     setIsStatusFilterOpen(!isStatusFilterOpen);
@@ -244,29 +224,37 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
           ...h,
           header: (
             <span ref={statusHeaderRef} className={styles.statusHeader}>
-              {h.header}
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className={styles.statusCaret}
-                aria-hidden="true"
-                onClick={toggleStatusFilter}
+              <div
+                className={styles.statusFilterTrigger}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  toggleStatusFilter();
+                }}
               >
-                <path
-                  d="M4 6L8 10L12 6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+                {h.header}
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={styles.statusCaret}
+                  aria-hidden="true"
+                  data-testid="status-filter-caret"
+                >
+                  <path
+                    d="M4 6L8 10L12 6"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
               <StatusFilter
                 availableStatuses={availableStatuses}
                 selectedStatuses={selectedStatuses}
-                onApply={handleStatusFilterApply}
+                onApply={onStatusFilterApply}
                 isOpen={isStatusFilterOpen}
                 onToggle={toggleStatusFilter}
                 anchorRef={statusHeaderRef}
@@ -285,6 +273,7 @@ export const OrdersFulfillmentTable: React.FC<OrdersFulfillmentTableProps> = ({
     selectedStatuses,
     toggleStatusFilter,
     totalNewOrdersCount,
+    onStatusFilterApply,
   ]);
 
   const renderCell = (row: PatientOrderRow, cellId: string) => {

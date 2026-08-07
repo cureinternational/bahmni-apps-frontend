@@ -59,9 +59,17 @@
   min-width: 0;
 }
 
+.filtersRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-05;
+  flex-wrap: wrap;
+  margin-bottom: $spacing-05;
+}
+
 .searchContainer {
   max-width: 500px;
-  margin-bottom: $spacing-05;
 
   :global(input::placeholder) {
     color: #525252 !important;

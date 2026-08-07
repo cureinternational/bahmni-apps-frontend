@@ -197,8 +197,8 @@ describe('OrdersFulfillmentTable', () => {
   it('renders total orders count', () => {
     render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
 
+    expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('1')).toBeInTheDocument();
   });
 
   it('renders admitted column with Yes for admitted patients', () => {
@@ -486,88 +486,6 @@ describe('OrdersFulfillmentTable', () => {
     });
   });
 
-  describe('Search Term and Status Filter Integration', () => {
-    it('clears status filters when search term is provided with 3+ characters', () => {
-      const { rerender } = render(
-        <OrdersFulfillmentTable
-          rows={mockRows}
-          headers={mockHeaders}
-          searchTerm=""
-        />,
-      );
-
-      // Verify initial render shows rows (status filters are pre-selected)
-      expect(screen.getByText('David Kamau')).toBeInTheDocument();
-      expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
-
-      // Re-render with search term
-      rerender(
-        <OrdersFulfillmentTable
-          rows={mockRows}
-          headers={mockHeaders}
-          searchTerm="David"
-        />,
-      );
-
-      // When search is active with 3+ characters, all rows should be shown
-      // (no status filtering applies during search)
-      expect(screen.getByText('David Kamau')).toBeInTheDocument();
-      expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
-    });
-
-    it('resets status filters to pre-selected when search term is cleared', () => {
-      const { rerender } = render(
-        <OrdersFulfillmentTable
-          rows={mockRows}
-          headers={mockHeaders}
-          searchTerm="David"
-        />,
-      );
-
-      expect(screen.getByText('David Kamau')).toBeInTheDocument();
-
-      // Clear search term
-      rerender(
-        <OrdersFulfillmentTable
-          rows={mockRows}
-          headers={mockHeaders}
-          searchTerm=""
-        />,
-      );
-
-      // Status filters should reset to pre-selected statuses
-      expect(screen.getByText('David Kamau')).toBeInTheDocument();
-    });
-
-    it('shows all rows when search term is less than 3 characters', () => {
-      render(
-        <OrdersFulfillmentTable
-          rows={mockRows}
-          headers={mockHeaders}
-          searchTerm="Da"
-        />,
-      );
-
-      // With less than 3 characters, all rows should be shown
-      expect(screen.getByText('David Kamau')).toBeInTheDocument();
-      expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
-    });
-
-    it('maintains status filter behavior when no search term is provided', () => {
-      render(
-        <OrdersFulfillmentTable
-          rows={mockRows}
-          headers={mockHeaders}
-          searchTerm=""
-        />,
-      );
-
-      // Should render with pre-selected status filters applied
-      expect(screen.getByText('David Kamau')).toBeInTheDocument();
-      expect(screen.getByText('Samuel Mensah')).toBeInTheDocument();
-    });
-  });
-
   describe('tabStatuses prop', () => {
     const poTabStatuses = {
       available: [
@@ -622,6 +540,48 @@ describe('OrdersFulfillmentTable', () => {
         <OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />,
       );
       expect(container).toBeInTheDocument();
+    });
+  });
+
+  describe('Status filter expanded click target', () => {
+    it('opens the status filter when clicking the Status header label', () => {
+      render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+      fireEvent.click(screen.getByText('Status'));
+
+      expect(screen.getByLabelText('STATUS_NEW')).toBeInTheDocument();
+      expect(screen.getByText('APPLY')).toBeInTheDocument();
+    });
+
+    it('opens the status filter when clicking the caret', () => {
+      render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+      fireEvent.click(screen.getByTestId('status-filter-caret'));
+
+      expect(screen.getByLabelText('STATUS_NEW')).toBeInTheDocument();
+    });
+
+    it('does not trigger column sorting when the status header is clicked', () => {
+      render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+      const statusTh = screen.getByText('Status').closest('th');
+      expect(statusTh).toHaveAttribute('aria-sort', 'none');
+
+      fireEvent.click(screen.getByText('Status'));
+
+      expect(statusTh).toHaveAttribute('aria-sort', 'none');
+    });
+
+    it('keeps the dropdown open when a status checkbox is clicked', () => {
+      render(<OrdersFulfillmentTable rows={mockRows} headers={mockHeaders} />);
+
+      fireEvent.click(screen.getByText('Status'));
+      expect(screen.getByLabelText('STATUS_NEW')).toBeInTheDocument();
+
+      fireEvent.click(screen.getByLabelText('STATUS_NEW'));
+
+      expect(screen.getByLabelText('STATUS_NEW')).toBeChecked();
+      expect(screen.getByText('APPLY')).toBeInTheDocument();
     });
   });
 });

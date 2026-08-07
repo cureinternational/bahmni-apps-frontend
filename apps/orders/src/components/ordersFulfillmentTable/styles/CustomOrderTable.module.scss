@@ -13,6 +13,12 @@
     min-width: 50% !important;
     max-width: 50% !important;
   }
+  :global(.cds--data-table) thead tr th :global(.cds--table-sort) {
+    justify-content: space-between;
+  }
+  :global(.cds--data-table) thead tr th :global(.cds--table-sort) > :global(.cds--table-sort__flex) {
+    justify-content: space-between;
+  }
   .customOrderCell {
     text-align: left !important;
     width: 100% !important;

@@ -1,0 +1,28 @@
+@use "@carbon/react/scss/spacing" as *;
+@use "@carbon/react/scss/type" as *;
+@use "@carbon/react/scss/colors" as *;
+
+.filterChips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $spacing-03;
+}
+
+.filterHeading {
+  @include type-style("heading-compact-01");
+  color: $gray-100;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chip:global(.cds--tag) {
+  background-color: $gray-70;
+  color: $white;
+  border-color: $gray-70;
+  cursor: default;
+
+  &:hover {
+    background-color: $gray-70;
+  }
+}
