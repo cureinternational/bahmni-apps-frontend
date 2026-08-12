@@ -1,4 +1,6 @@
 import { render, screen } from '@testing-library/react';
+import { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import {
   DEFAULT_TRIGGER,
   DEFAULT_PATIENT_FIELDS,
@@ -9,7 +11,7 @@ import { CommandPaletteProvider } from '../CommandPaletteProvider';
 jest.mock('../../../hooks/useCommandPaletteConfig');
 
 jest.mock('@bahmni/widgets', () => ({
-  CommandPaletteProvider: ({ children }: { children: React.ReactNode }) => (
+  CommandPaletteProvider: ({ children }: { children: ReactNode }) => (
     <div data-testid="widget-provider">{children}</div>
   ),
 }));
@@ -33,14 +35,17 @@ describe('CommandPaletteProvider', () => {
     mockUseCommandPaletteConfig.mockReturnValue(defaultConfig);
   });
   afterEach(() => {
+    jest.clearAllMocks();
     localStorage.clear();
   });
 
   it('renders children inside the widget provider', () => {
     render(
-      <CommandPaletteProvider>
-        <span>child content</span>
-      </CommandPaletteProvider>,
+      <MemoryRouter>
+        <CommandPaletteProvider>
+          <span>child content</span>
+        </CommandPaletteProvider>
+      </MemoryRouter>,
     );
 
     expect(screen.getByTestId('widget-provider')).toBeInTheDocument();
@@ -51,9 +56,11 @@ describe('CommandPaletteProvider', () => {
     localStorage.setItem('enableCommandPalette', 'false');
 
     render(
-      <CommandPaletteProvider>
-        <span>child content</span>
-      </CommandPaletteProvider>,
+      <MemoryRouter>
+        <CommandPaletteProvider>
+          <span>child content</span>
+        </CommandPaletteProvider>
+      </MemoryRouter>,
     );
 
     expect(screen.queryByTestId('widget-provider')).not.toBeInTheDocument();
