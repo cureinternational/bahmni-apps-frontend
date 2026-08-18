@@ -147,6 +147,7 @@ export {
   fetchMedicationOrdersMetadata,
   searchMedications,
   getVaccinations,
+  getMedicationRequestsForWorklist,
   type FormattedMedicationRequest,
   type MedicationRequest,
   MedicationStatus,
@@ -309,7 +310,10 @@ export {
   type VitalFlowSheetConceptDetail,
 } from './vitalFlowSheetService';
 
-export { getServiceRequests } from './orderRequestService';
+export {
+  getServiceRequests,
+  getServiceRequestsForWorklist,
+} from './orderRequestService';
 export {
   getPatientPrograms,
   type ProgramEnrollment,
@@ -327,6 +331,7 @@ export * from './orders';
 export {
   createTask,
   createOrUpdateTask,
+  getTasksByBasedOn,
   type CreateTaskPayload,
   type CreateTaskOptions,
 } from './taskService';

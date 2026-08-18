@@ -1,6 +1,9 @@
 import type { Bundle, ServiceRequest, Resource } from 'fhir/r4';
 import { get } from '../api';
-import { SERVICE_REQUESTS_URL } from './constants';
+import {
+  SERVICE_REQUESTS_URL,
+  SERVICE_REQUESTS_WORKLIST_URL,
+} from './constants';
 
 /**
  * Fetches service requests from the FHIR R4 endpoint
@@ -32,5 +35,19 @@ export async function getServiceRequests<T extends Resource = ServiceRequest>(
       numberOfVisits,
       revinclude,
     ),
+  );
+}
+
+/**
+ * Fetches all pending service requests of a given category (across patients) for the orders
+ * worklist, scoped to a location. taskStatus/owner/notes are read straight off the returned
+ * ServiceRequest's extensions (populated server-side from the linked FHIR Task) — no separate
+ * Task fetch is needed for these order types.
+ */
+export async function getServiceRequestsForWorklist<
+  T extends Resource = ServiceRequest,
+>(category: string, locationUuid: string): Promise<Bundle<T>> {
+  return await get<Bundle<T>>(
+    SERVICE_REQUESTS_WORKLIST_URL(category, locationUuid),
   );
 }

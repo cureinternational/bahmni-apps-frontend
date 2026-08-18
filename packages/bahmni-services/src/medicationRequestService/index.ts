@@ -13,4 +13,5 @@ export {
   fetchMedicationOrdersMetadata,
   searchMedications,
   getVaccinations,
+  getMedicationRequestsForWorklist,
 } from './medicationRequestService';
