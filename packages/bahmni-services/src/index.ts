@@ -332,6 +332,7 @@ export {
   createTask,
   createOrUpdateTask,
   getTasksByBasedOn,
+  createOrUpdateTask,
   type CreateTaskPayload,
   type CreateTaskOptions,
 } from './taskService';
