@@ -1,7 +1,6 @@
-import { get, post, put } from '../api';
 import type { Bundle, Resource } from 'fhir/r4';
-import { FHIR_TASK_URL, TASKS_BY_BASED_ON_URL } from './constants';
 import { get, post, put } from '../api';
+import { FHIR_TASK_URL, TASKS_BY_BASED_ON_URL } from './constants';
 import { CreateTaskOptions, CreateTaskPayload } from './models';
 
 interface FhirBundle {
@@ -144,26 +143,4 @@ export async function getTasksByBasedOn(
     return { resourceType: 'Bundle', type: 'searchset', entry: [] };
   }
   return await get<Bundle<Resource>>(TASKS_BY_BASED_ON_URL(basedOnRefs));
-}
-/**
- * Creates or updates a FHIR Task for an order.
- * If an existing Task linked to this order is found, updates it.
- * Otherwise, creates a new Task.
- *
- * @param orderUuid - The UUID of the order (ServiceRequest) being acted upon
- * @param fhirStatus - FHIR Task status string (e.g. 'requested', 'accepted', 'completed')
- * @param options - Optional fields: notes, ownerUuid, encounterUuid, patientUuid, conceptUuid
- */
-export async function createOrUpdateTask(
-  orderUuid: string,
-  fhirStatus: string,
-  options: CreateTaskOptions = {},
-): Promise<void> {
-  const existingTask = await getExistingTaskForOrder(orderUuid);
-
-  if (existingTask) {
-    await updateTask(existingTask.id, orderUuid, fhirStatus, options);
-  } else {
-    await createTask(orderUuid, fhirStatus, options);
-  }
 }
